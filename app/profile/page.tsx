@@ -153,7 +153,7 @@ export default function ProfilePage() {
                   {editing ? "Cancel editing" : "Edit musician profile"}
                 </Button>
                 <a
-                  href="https://accounts.clerk.com/user"
+                  href="https://accounts.clerk.dev/user"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 text-xs text-muted-foreground hover:text-emerald-600 transition"
