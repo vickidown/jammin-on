@@ -1,60 +1,60 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Music, Map, Calendar, BookOpen, Bot, LayoutDashboard, User, PlusCircle } from "lucide-react";
+import { Music, Map, Calendar, BookOpen, Bot, LayoutDashboard, User, PlusCircle, Users, Menu, X } from "lucide-react";
 import { SignInButton, SignUpButton, SignOutButton, UserButton, useAuth } from "@clerk/nextjs";
-import { Users } from "lucide-react";
+
+const navLinks = [
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/events", label: "Events", icon: Calendar },
+  { href: "/map", label: "Map", icon: Map },
+  { href: "/blog", label: "Blog", icon: BookOpen },
+  { href: "/musicians", label: "Musicians", icon: Users },
+  { href: "/ai", label: "AI Assistant", icon: Bot },
+];
+
+const authLinks = [
+  { href: "/post-jam", label: "Post a Jam", icon: PlusCircle },
+  { href: "/profile", label: "Profile", icon: User },
+];
 
 export function Navbar() {
   const { isSignedIn } = useAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
 
   return (
     <nav className="border-b bg-background sticky top-0 z-50">
-      <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 font-bold text-2xl">
-          <Music className="h-8 w-8 text-emerald-600" /> JamFinder
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-2 font-bold text-xl sm:text-2xl">
+          <Music className="h-7 w-7 text-emerald-600" /> JamFinder
         </Link>
 
-        <div className="flex gap-6 text-sm font-medium">
-          <Link href="/dashboard" className="flex items-center gap-1 hover:text-emerald-600">
-            <LayoutDashboard className="h-4 w-4" /> Dashboard
-          </Link>
-          <Link href="/events" className="flex items-center gap-1 hover:text-emerald-600">
-            <Calendar className="h-4 w-4" /> Events
-          </Link>
-          <Link href="/map" className="flex items-center gap-1 hover:text-emerald-600">
-            <Map className="h-4 w-4" /> Map
-          </Link>
-          <Link href="/blog" className="flex items-center gap-1 hover:text-emerald-600">
-            <BookOpen className="h-4 w-4" /> Blog
-          </Link>
-          <Link href="/musicians" className="flex items-center gap-1 hover:text-emerald-600">
-            <Users className="h-4 w-4" /> Musicians
-          </Link>
-          <Link href="/ai" className="flex items-center gap-1 hover:text-emerald-600">
-            <Bot className="h-4 w-4" /> AI Assistant
-          </Link>
-          {isSignedIn && (
-            <>
-              <Link href="/post-jam" className="flex items-center gap-1 hover:text-emerald-600">
-                <PlusCircle className="h-4 w-4" /> Post a Jam
-              </Link>
-              <Link href="/profile" className="flex items-center gap-1 hover:text-emerald-600">
-                <User className="h-4 w-4" /> Profile
-              </Link>
-            </>
-          )}
+        {/* Desktop nav */}
+        <div className="hidden lg:flex gap-5 text-sm font-medium">
+          {navLinks.map(({ href, label, icon: Icon }) => (
+            <Link key={href} href={href} className="flex items-center gap-1 hover:text-emerald-600 transition">
+              <Icon className="h-4 w-4" /> {label}
+            </Link>
+          ))}
+          {isSignedIn && authLinks.map(({ href, label, icon: Icon }) => (
+            <Link key={href} href={href} className="flex items-center gap-1 hover:text-emerald-600 transition">
+              <Icon className="h-4 w-4" /> {label}
+            </Link>
+          ))}
         </div>
 
-        <div className="flex items-center gap-4">
+        {/* Desktop auth */}
+        <div className="hidden lg:flex items-center gap-3">
           {!isSignedIn ? (
             <>
               <SignInButton mode="modal">
-                <Button variant="outline">Sign In</Button>
+                <Button variant="outline" size="sm">Sign In</Button>
               </SignInButton>
               <SignUpButton mode="modal">
-                <Button>Sign Up</Button>
+                <Button size="sm">Sign Up</Button>
               </SignUpButton>
             </>
           ) : (
@@ -66,7 +66,69 @@ export function Navbar() {
             </div>
           )}
         </div>
+
+        {/* Mobile right side */}
+        <div className="flex lg:hidden items-center gap-3">
+          {isSignedIn && <UserButton />}
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="p-2 rounded-lg hover:bg-muted transition"
+            aria-label="Toggle menu"
+          >
+            {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
       </div>
+
+      {/* Mobile menu */}
+      {menuOpen && (
+        <div className="lg:hidden border-t bg-background">
+          <div className="max-w-7xl mx-auto px-4 py-4 flex flex-col gap-1">
+            {navLinks.map(({ href, label, icon: Icon }) => (
+              <Link
+                key={href}
+                href={href}
+                onClick={() => setMenuOpen(false)}
+                className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-muted hover:text-emerald-600 transition text-sm font-medium"
+              >
+                <Icon className="h-4 w-4 text-emerald-600" /> {label}
+              </Link>
+            ))}
+
+            {isSignedIn && authLinks.map(({ href, label, icon: Icon }) => (
+              <Link
+                key={href}
+                href={href}
+                onClick={() => setMenuOpen(false)}
+                className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-muted hover:text-emerald-600 transition text-sm font-medium"
+              >
+                <Icon className="h-4 w-4 text-emerald-600" /> {label}
+              </Link>
+            ))}
+
+            <div className="border-t mt-2 pt-4 flex flex-col gap-2">
+              {!isSignedIn ? (
+                <>
+                  <SignInButton mode="modal">
+                    <Button variant="outline" className="w-full" onClick={() => setMenuOpen(false)}>
+                      Sign In
+                    </Button>
+                  </SignInButton>
+                  <SignUpButton mode="modal">
+                    <Button className="w-full" onClick={() => setMenuOpen(false)}>
+                      Sign Up
+                    </Button>
+                  </SignUpButton>
+                </>
+              ) : (
+                <SignOutButton>
+                  <Button variant="outline" className="w-full">Sign Out</Button>
+                </SignOutButton>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </nav>
   );
 }
