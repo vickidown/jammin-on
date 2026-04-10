@@ -5,40 +5,39 @@ import { fetchEvents, Event } from "@/lib/data";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { useEffect, useState } from "react";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, X } from "lucide-react";
 
 type VenueType = "bar" | "community" | "private-home" | "studio" | "other";
 
 const venueConfig: Record<VenueType, { color: string; label: string; emoji: string }> = {
-  "bar": { color: "#ef4444", label: "Bar / Pub", emoji: "🍺" },
-  "community": { color: "#3b82f6", label: "Community Hall", emoji: "🏛️" },
-  "private-home": { color: "#8b5cf6", label: "Private Home", emoji: "🏠" },
-  "studio": { color: "#f59e0b", label: "Studio / Venue", emoji: "🎤" },
-  "other": { color: "#10b981", label: "Other", emoji: "🎸" },
+  "bar":          { color: "#ef4444", label: "Bar / Pub",       emoji: "🍺" },
+  "community":    { color: "#3b82f6", label: "Community Hall",  emoji: "🏛️" },
+  "private-home": { color: "#8b5cf6", label: "Private Home",    emoji: "🏠" },
+  "studio":       { color: "#f59e0b", label: "Studio / Venue",  emoji: "🎤" },
+  "other":        { color: "#10b981", label: "Other",           emoji: "🎸" },
 };
 
-const createCustomIcon = (color: string) => {
-  return L.divIcon({
-    className: "custom-marker",
-    html: `<div style="background-color: ${color}; width: 26px; height: 26px; border-radius: 50%; border: 3px solid white; box-shadow: 0 3px 8px rgba(0,0,0,0.4);"></div>`,
-    iconSize: [26, 26],
-    iconAnchor: [13, 13],
+const createCustomIcon = (color: string) =>
+  L.divIcon({
+    className: "",
+    html: `<div style="
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: ${color};
+      border: 2px solid white;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.25);
+    "></div>`,
+    iconSize: [14, 14],
+    iconAnchor: [7, 7],
   });
-};
 
 export default function MapComponent() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [visibleTypes, setVisibleTypes] = useState<Record<VenueType, boolean>>({
-    "bar": true,
-    "community": true,
-    "private-home": true,
-    "studio": true,
-    "other": true,
+    "bar": true, "community": true, "private-home": true, "studio": true, "other": true,
   });
-
   const [messageEvent, setMessageEvent] = useState<any>(null);
   const [messageText, setMessageText] = useState("");
 
@@ -49,150 +48,188 @@ export default function MapComponent() {
       iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
       shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
     });
-
-    fetchEvents().then((data) => {
-      setEvents(data);
-      setLoading(false);
-    });
+    fetchEvents().then((data) => { setEvents(data); setLoading(false); });
   }, []);
 
-  const toggleType = (type: VenueType) => {
+  const toggleType = (type: VenueType) =>
     setVisibleTypes(prev => ({ ...prev, [type]: !prev[type] }));
-  };
 
-  const filteredEvents = events.filter(event =>
-    visibleTypes[event.venueType as VenueType]
-  );
+  const filteredEvents = events.filter(e => visibleTypes[e.venueType as VenueType]);
 
   const sendMessage = () => {
     if (!messageEvent || !messageText.trim()) return;
-    alert(`✅ Message sent to host of "${messageEvent.title}"!\n\nYour message:\n"${messageText}"\n\n(Real messaging coming soon)`);
+    alert(`Message sent to host of "${messageEvent.title}"!\n\n"${messageText}"\n\n(Real messaging coming soon)`);
     setMessageText("");
     setMessageEvent(null);
   };
 
-  if (loading) {
-    return <p className="text-center py-12 text-muted-foreground">Loading map...</p>;
-  }
+  if (loading) return (
+    <div style={{ height: 600, display: "flex", alignItems: "center", justifyContent: "center", background: "#f8fafc", borderRadius: 12 }}>
+      <p style={{ color: "#94a3b8", fontFamily: "system-ui", fontSize: 14 }}>Loading map...</p>
+    </div>
+  );
 
   return (
-    <div className="relative">
+    <div style={{ position: "relative", fontFamily: "system-ui, -apple-system, sans-serif" }}>
       <MapContainer
         center={[42.777, -81.183]}
         zoom={9}
-        style={{ height: "600px", width: "100%" }}
+        style={{ height: 600, width: "100%", borderRadius: 12 }}
       >
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-
         {filteredEvents.map((event) => {
-          const config = venueConfig[event.venueType as VenueType];
+          const config = venueConfig[event.venueType as VenueType] || venueConfig.other;
           const isPrivate = event.type === "private" || event.venueType === "private-home";
-
           return (
-            <Marker
-              key={event.id}
-              position={[event.lat, event.lng]}
-              icon={createCustomIcon(config.color)}
-            >
+            <Marker key={event.id} position={[event.lat, event.lng]} icon={createCustomIcon(config.color)}>
               <Popup>
-                <div className="font-semibold text-base mb-1">{event.title}</div>
-                <div className="text-sm text-gray-600">
-                  {event.date} • {event.location}
+                <div style={{ fontFamily: "system-ui, sans-serif", minWidth: 200, maxWidth: 240 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+                    <div style={{ width: 8, height: 8, borderRadius: "50%", background: config.color, flexShrink: 0 }} />
+                    <span style={{ fontSize: 11, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                      {config.label}
+                    </span>
+                  </div>
+                  <p style={{ margin: "0 0 4px", fontSize: 15, fontWeight: 600, color: "#0f172a", lineHeight: 1.3 }}>
+                    {event.title}
+                  </p>
+                  <p style={{ margin: "0 0 8px", fontSize: 12, color: "#64748b" }}>
+                    {event.date} · {event.location}
+                  </p>
+                  <p style={{ margin: "0 0 12px", fontSize: 13, color: "#374151", lineHeight: 1.5 }}>
+                    {event.description}
+                  </p>
+                  {isPrivate && (
+                    <button
+                      onClick={() => setMessageEvent(event)}
+                      style={{
+                        width: "100%", padding: "7px 12px", background: "#7c3aed",
+                        color: "white", border: "none", borderRadius: 8,
+                        fontSize: 12, fontWeight: 500, cursor: "pointer",
+                        display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                      }}
+                    >
+                      Message Host
+                    </button>
+                  )}
                 </div>
-                <div className="mt-2 text-xs uppercase tracking-widest flex items-center gap-1">
-                  {config.emoji} {config.label}
-                </div>
-                <div className="text-sm mt-3 leading-snug">{event.description}</div>
-
-                {isPrivate && (
-                  <Button
-                    onClick={() => setMessageEvent(event)}
-                    className="w-full mt-4 bg-violet-600 hover:bg-violet-700"
-                    size="sm"
-                  >
-                    <MessageCircle className="h-4 w-4 mr-2" />
-                    Message Host for Details
-                  </Button>
-                )}
               </Popup>
             </Marker>
           );
         })}
       </MapContainer>
 
-      {/* Legend / Filters */}
-      <Card className="absolute top-4 right-4 p-5 w-72 z-[1000] shadow-xl">
-        <h3 className="font-semibold mb-4 flex items-center gap-2">
-          🎯 Show on Map
-        </h3>
-
-        <div className="space-y-3">
+      {/* Legend panel */}
+      <div style={{
+        position: "absolute", top: 12, right: 12, zIndex: 1000,
+        background: "white", borderRadius: 12, padding: "14px 16px",
+        boxShadow: "0 2px 12px rgba(0,0,0,0.1)", minWidth: 180,
+        border: "1px solid #e2e8f0",
+      }}>
+        <p style={{ margin: "0 0 10px", fontSize: 11, fontWeight: 600, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+          Venue type
+        </p>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {Object.entries(venueConfig).map(([key, config]) => (
-            <div key={key} className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div
-                  className="w-5 h-5 rounded-full border-2 border-white shadow"
-                  style={{ backgroundColor: config.color }}
-                />
-                <span className="text-sm">{config.emoji} {config.label}</span>
+            <div key={key} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{
+                  width: 10, height: 10, borderRadius: "50%",
+                  background: visibleTypes[key as VenueType] ? config.color : "#cbd5e1",
+                  border: "1.5px solid white",
+                  boxShadow: "0 0 0 1px #e2e8f0",
+                  flexShrink: 0,
+                }} />
+                <span style={{ fontSize: 12, color: visibleTypes[key as VenueType] ? "#1e293b" : "#94a3b8" }}>
+                  {config.label}
+                </span>
               </div>
-              <Button
-                variant={visibleTypes[key as VenueType] ? "default" : "outline"}
-                size="sm"
+              <button
                 onClick={() => toggleType(key as VenueType)}
+                style={{
+                  fontSize: 11, padding: "2px 8px", borderRadius: 20,
+                  border: `1px solid ${visibleTypes[key as VenueType] ? config.color : "#e2e8f0"}`,
+                  background: visibleTypes[key as VenueType] ? `${config.color}15` : "transparent",
+                  color: visibleTypes[key as VenueType] ? config.color : "#94a3b8",
+                  cursor: "pointer", fontWeight: 500,
+                }}
               >
-                {visibleTypes[key as VenueType] ? "On" : "Off"}
-              </Button>
+                {visibleTypes[key as VenueType] ? "on" : "off"}
+              </button>
             </div>
           ))}
         </div>
-
-        <Button
-          variant="outline"
-          size="sm"
-          className="w-full mt-6"
+        <button
           onClick={() => setVisibleTypes({ bar: true, community: true, "private-home": true, studio: true, other: true })}
+          style={{
+            marginTop: 12, width: "100%", fontSize: 11, padding: "5px 0",
+            border: "1px solid #e2e8f0", borderRadius: 8, background: "transparent",
+            color: "#64748b", cursor: "pointer",
+          }}
         >
-          Show All
-        </Button>
-      </Card>
+          Show all
+        </button>
+      </div>
 
-      {/* Message Modal */}
+      {/* Message modal */}
       {messageEvent && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[2000]">
-          <Card className="w-full max-w-md p-8">
-            <h3 className="text-xl font-semibold mb-2">Message Host</h3>
-            <p className="text-sm text-muted-foreground mb-6">
-              Asking about: <strong>{messageEvent.title}</strong>
+        <div style={{
+          position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)",
+          display: "flex", alignItems: "center", justifyContent: "center", zIndex: 2000,
+        }}>
+          <div style={{
+            background: "white", borderRadius: 16, padding: 28, width: "100%",
+            maxWidth: 420, boxShadow: "0 20px 60px rgba(0,0,0,0.2)",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
+              <h3 style={{ margin: 0, fontSize: 17, fontWeight: 600, color: "#0f172a" }}>Message Host</h3>
+              <button onClick={() => { setMessageEvent(null); setMessageText(""); }}
+                style={{ background: "none", border: "none", cursor: "pointer", color: "#94a3b8", padding: 4 }}>
+                <X size={18} />
+              </button>
+            </div>
+            <p style={{ margin: "0 0 16px", fontSize: 13, color: "#64748b" }}>
+              About: <strong style={{ color: "#0f172a" }}>{messageEvent.title}</strong>
             </p>
-
             <textarea
-              className="w-full h-32 p-4 border rounded-xl resize-y min-h-[120px] mb-6"
-              placeholder="Hi! I'm interested in your jam. What time should I arrive?"
+              style={{
+                width: "100%", height: 120, padding: "10px 12px",
+                border: "1px solid #e2e8f0", borderRadius: 10, resize: "none",
+                fontSize: 14, fontFamily: "system-ui", color: "#0f172a",
+                outline: "none", boxSizing: "border-box",
+              }}
+              placeholder="Hi! I'm interested in joining your jam..."
               value={messageText}
               onChange={(e) => setMessageText(e.target.value)}
             />
-
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
+            <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
+              <button
                 onClick={() => { setMessageEvent(null); setMessageText(""); }}
-                className="flex-1"
+                style={{
+                  flex: 1, padding: "9px 0", border: "1px solid #e2e8f0",
+                  borderRadius: 10, background: "transparent", fontSize: 14,
+                  color: "#64748b", cursor: "pointer",
+                }}
               >
                 Cancel
-              </Button>
-              <Button
+              </button>
+              <button
                 onClick={sendMessage}
                 disabled={!messageText.trim()}
-                className="flex-1"
+                style={{
+                  flex: 1, padding: "9px 0", border: "none",
+                  borderRadius: 10, background: messageText.trim() ? "#7c3aed" : "#e2e8f0",
+                  fontSize: 14, color: messageText.trim() ? "white" : "#94a3b8",
+                  cursor: messageText.trim() ? "pointer" : "not-allowed", fontWeight: 500,
+                }}
               >
-                Send Message
-              </Button>
+                Send
+              </button>
             </div>
-          </Card>
+          </div>
         </div>
       )}
     </div>
