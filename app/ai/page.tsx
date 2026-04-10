@@ -359,7 +359,6 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: "13px",
     cursor: "pointer",
     whiteSpace: "nowrap" as const,
-    shrink: 0,
   },
   inputRow: {
     width: "100%",

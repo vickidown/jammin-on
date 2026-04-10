@@ -89,6 +89,37 @@ export default function PostJamPage() {
     setTimeout(() => router.push("/events"), 2000);
   };
 
+    setLoading(true);
+    setError("");
+
+    // Default coords for Ontario cities if not provided
+    const lat = form.lat ? parseFloat(form.lat) : 42.777;
+    const lng = form.lng ? parseFloat(form.lng) : -81.183;
+
+    const { error: supabaseError } = await supabase.from("events").insert({
+      title: form.title,
+      date: form.date,
+      location: form.location,
+      lat,
+      lng,
+      type: form.type,
+      venue_type: form.venueType,
+      instruments: form.instruments,
+      description: form.description,
+    });
+
+    setLoading(false);
+
+    if (supabaseError) {
+      setError("Something went wrong. Please try again.");
+      console.error(supabaseError);
+      return;
+    }
+
+    setSuccess(true);
+    setTimeout(() => router.push("/events"), 2000);
+  };
+
   if (success) {
     return (
       <div className="min-h-screen flex items-center justify-center">
