@@ -10,13 +10,13 @@ import { Trash2, Lock, Pencil, X, Check } from "lucide-react";
 const ADMIN_PASSWORD = "wrigley"; // Change this to your own password!
 
 const venueTypes = [
-  { value: "bar", label: "🍺 Bar / Pub" },
-  { value: "community", label: "🏛️ Community Hall" },
-  { value: "private-home", label: "🏠 Private Home" },
-  { value: "studio", label: "🎤 Studio / Venue" },
-  { value: "open-mic", label: "🎙️ Open Mic" }
-  { value: "karaoke", label: "🎤 Karaoke" },
-  { value: "other", label: "🎸 Other" },
+  { value: "bar", label: "Bar / Pub" },
+  { value: "community", label: "Community Hall" },
+  { value: "private-home", label: "Private Home" },
+  { value: "studio", label: "Studio / Venue" },
+  { value: "open-mic", label: "Open Mic" },
+  { value: "karaoke", label: "Karaoke" },
+  { value: "other", label: "Other" },
 ];
 
 export default function AdminPage() {
