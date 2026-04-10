@@ -172,8 +172,25 @@ export default function AIPage() {
 
               {/* Add to JamFinder buttons for web-found events */}
               {webEvents.length > 0 && (
-                <div style={styles.addEventContainer}>
-                  {webEvents.map((event, idx) => (
+  <div style={styles.addEventContainer}>
+    {webEvents.length > 1 && (
+      <button
+        onClick={() => webEvents.forEach(e => addToJamFinder(e))}
+        style={{
+          ...styles.addEventBtn,
+          width: "100%",
+          padding: "10px 16px",
+          marginBottom: 8,
+          background: "#0f172a",
+          borderRadius: 10,
+          fontSize: 13,
+          fontWeight: 600,
+        }}
+      >
+        ➕ Add All {webEvents.length} Events to JamFinder
+      </button>
+    )}
+    {webEvents.map((event, idx) => (
                     <div key={idx} style={styles.addEventCard}>
                       <div>
                         <p style={styles.addEventName}>{event.name}</p>
