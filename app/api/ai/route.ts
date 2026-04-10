@@ -55,6 +55,8 @@ INSTRUCTIONS:
 - Format any web-found events like this so they can be added to the app:
   🌐 [Event Name] | [Date] | [Location] | [Brief description] | [latitude] | [longitude] | [venue_type] | ADD_TO_APP
 - venue_type must be one of: bar, community, private-home, studio, karaoke, open-mic, other
+- For recurring events (every Saturday, weekly, etc.), use the next upcoming occurrence date in YYYY-MM-DD format
+- Always convert dates to YYYY-MM-DD format
 - For coordinates, look up the actual venue address and provide real lat/lng coordinates for the specific city/venue in Ontario. For example London ON is 42.9849,-81.2451 and St. Thomas ON is 42.7775,-81.1823 and Toronto ON is 43.6532,-79.3832. Try to be as specific as possible to the actual venue.
 - For events already in JamFinder, show them normally without the ADD_TO_APP tag
 - Keep responses friendly and music-focused`,

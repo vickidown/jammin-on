@@ -100,10 +100,46 @@ export default function AIPage() {
     setAddingEvent(event.name);
 
     // Try to parse date, fallback to today
-    let date = event.date;
-    if (!date.match(/^\d{4}-\d{2}-\d{2}$/)) {
-      date = new Date().toISOString().split("T")[0];
-    }
+   let date = event.date;
+if (!date.match(/^\d{4}-\d{2}-\d{2}$/)) {
+  // Try to parse natural language dates
+  const parsed = new Date(date);
+  if (!isNaN(parsed.getTime())) {
+    date = parsed.toISOString().split("T")[0];
+  } else if (date.toLowerCase().includes("saturday")) {
+    // Find next Saturday
+    const d = new Date();
+    d.setDate(d.getDate() + ((6 - d.getDay() + 7) % 7 || 7));
+    date = d.toISOString().split("T")[0];
+  } else if (date.toLowerCase().includes("friday")) {
+    const d = new Date();
+    d.setDate(d.getDate() + ((5 - d.getDay() + 7) % 7 || 7));
+    date = d.toISOString().split("T")[0];
+  } else if (date.toLowerCase().includes("thursday")) {
+    const d = new Date();
+    d.setDate(d.getDate() + ((4 - d.getDay() + 7) % 7 || 7));
+    date = d.toISOString().split("T")[0];
+  } else if (date.toLowerCase().includes("wednesday")) {
+    const d = new Date();
+    d.setDate(d.getDate() + ((3 - d.getDay() + 7) % 7 || 7));
+    date = d.toISOString().split("T")[0];
+  } else if (date.toLowerCase().includes("tuesday")) {
+    const d = new Date();
+    d.setDate(d.getDate() + ((2 - d.getDay() + 7) % 7 || 7));
+    date = d.toISOString().split("T")[0];
+  } else if (date.toLowerCase().includes("monday")) {
+    const d = new Date();
+    d.setDate(d.getDate() + ((1 - d.getDay() + 7) % 7 || 7));
+    date = d.toISOString().split("T")[0];
+  } else if (date.toLowerCase().includes("sunday")) {
+    const d = new Date();
+    d.setDate(d.getDate() + ((0 - d.getDay() + 7) % 7 || 7));
+    date = d.toISOString().split("T")[0];
+  } else {
+    // fallback to today
+    date = new Date().toISOString().split("T")[0];
+  }
+}
 
     const { error } = await supabase.from("events").insert({
       title: event.name,
