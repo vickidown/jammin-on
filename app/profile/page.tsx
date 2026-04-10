@@ -5,13 +5,27 @@ import { Card } from "@/components/ui/card";
 import { Calendar, Award, Music } from "lucide-react";
 import { useEffect, useState } from "react";
 import { fetchEvents, Event } from "@/lib/data";
+import { supabase } from "@/lib/supabase";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+
+interface RSVPWithEvent {
+  id: string;
+  event_id: string;
+  created_at: string;
+  events: {
+    title: string;
+    date: string;
+    location: string;
+  };
+}
 
 export default function ProfilePage() {
   const { user, isLoaded } = useUser();
   const router = useRouter();
   const [events, setEvents] = useState<Event[]>([]);
+  const [rsvps, setRsvps] = useState<RSVPWithEvent[]>([]);
+  const [rsvpsLoading, setRsvpsLoading] = useState(true);
 
   useEffect(() => {
     if (isLoaded && !user) {
@@ -22,6 +36,22 @@ export default function ProfilePage() {
   useEffect(() => {
     fetchEvents().then(setEvents);
   }, []);
+
+  useEffect(() => {
+    if (!user) return;
+
+    supabase
+      .from("rsvps")
+      .select("id, event_id, created_at, events(title, date, location)")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .then(({ data, error }) => {
+        if (!error && data) {
+          setRsvps(data as RSVPWithEvent[]);
+        }
+        setRsvpsLoading(false);
+      });
+  }, [user]);
 
   if (!isLoaded || !user) {
     return (
@@ -36,7 +66,13 @@ export default function ProfilePage() {
     year: "numeric",
   });
 
-  const upcomingEvents = events.slice(0, 3);
+  const upcomingRsvps = rsvps.filter(
+    (r) => new Date(r.events.date) >= new Date()
+  );
+
+  const pastRsvps = rsvps.filter(
+    (r) => new Date(r.events.date) < new Date()
+  );
 
   return (
     <div className="max-w-4xl mx-auto p-6">
@@ -49,7 +85,6 @@ export default function ProfilePage() {
         {/* Profile Card */}
         <div className="lg:col-span-1">
           <Card className="p-8 text-center">
-            {/* Avatar */}
             {user.imageUrl ? (
               <Image
                 src={user.imageUrl}
@@ -79,8 +114,12 @@ export default function ProfilePage() {
                 <span className="font-medium">{memberSince}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Events available:</span>
-                <span className="font-medium">{events.length}</span>
+                <span className="text-muted-foreground">Total RSVPs:</span>
+                <span className="font-medium">{rsvps.length}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Upcoming jams:</span>
+                <span className="font-medium text-emerald-600">{upcomingRsvps.length}</span>
               </div>
             </div>
 
@@ -95,25 +134,35 @@ export default function ProfilePage() {
 
         {/* Activity */}
         <div className="lg:col-span-2 space-y-8">
-          {/* Upcoming Jams */}
+          {/* Upcoming RSVPs */}
           <Card className="p-8">
             <div className="flex items-center gap-3 mb-6">
               <Calendar className="h-6 w-6 text-emerald-600" />
-              <h3 className="text-xl font-semibold">Upcoming Jams Near You</h3>
+              <h3 className="text-xl font-semibold">My Upcoming Jams</h3>
             </div>
 
-            {upcomingEvents.length === 0 ? (
-              <p className="text-muted-foreground text-sm">No upcoming events yet.</p>
+            {rsvpsLoading ? (
+              <p className="text-muted-foreground text-sm">Loading your jams...</p>
+            ) : upcomingRsvps.length === 0 ? (
+              <div className="text-center py-6">
+                <p className="text-muted-foreground text-sm mb-4">You haven't RSVP'd to any upcoming jams yet.</p>
+                <a href="/events" className="text-emerald-600 text-sm font-medium hover:underline">
+                  Browse events →
+                </a>
+              </div>
             ) : (
-              <div className="space-y-6">
-                {upcomingEvents.map((event) => (
-                  <div key={event.id} className="flex gap-4">
+              <div className="space-y-4">
+                {upcomingRsvps.map((rsvp) => (
+                  <div key={rsvp.id} className="flex gap-4 p-4 bg-emerald-50 rounded-xl border border-emerald-100">
                     <div className="text-right w-20 text-sm text-muted-foreground shrink-0">
-                      {new Date(event.date).toLocaleDateString("en-CA", { month: "short", day: "numeric" })}
+                      {new Date(rsvp.events.date).toLocaleDateString("en-CA", {
+                        month: "short",
+                        day: "numeric",
+                      })}
                     </div>
                     <div>
-                      <p className="font-medium">{event.title}</p>
-                      <p className="text-sm text-muted-foreground">{event.location}</p>
+                      <p className="font-medium">{rsvp.events.title}</p>
+                      <p className="text-sm text-muted-foreground">{rsvp.events.location}</p>
                     </div>
                   </div>
                 ))}
@@ -130,16 +179,16 @@ export default function ProfilePage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
               <div className="bg-muted/50 p-6 rounded-xl text-center">
-                <p className="text-3xl font-bold text-emerald-600">{events.length}</p>
-                <p className="text-sm text-muted-foreground">Active Jams</p>
+                <p className="text-3xl font-bold text-emerald-600">{rsvps.length}</p>
+                <p className="text-sm text-muted-foreground">Total RSVPs</p>
               </div>
               <div className="bg-muted/50 p-6 rounded-xl text-center">
-                <p className="text-3xl font-bold text-emerald-600">0</p>
-                <p className="text-sm text-muted-foreground">RSVPs (coming soon)</p>
+                <p className="text-3xl font-bold text-emerald-600">{upcomingRsvps.length}</p>
+                <p className="text-sm text-muted-foreground">Upcoming Jams</p>
               </div>
               <div className="bg-muted/50 p-6 rounded-xl text-center">
-                <p className="text-3xl font-bold text-emerald-600">0</p>
-                <p className="text-sm text-muted-foreground">Jams Posted</p>
+                <p className="text-3xl font-bold text-emerald-600">{pastRsvps.length}</p>
+                <p className="text-sm text-muted-foreground">Jams Attended</p>
               </div>
             </div>
           </Card>
