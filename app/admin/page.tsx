@@ -14,6 +14,8 @@ const venueTypes = [
   { value: "community", label: "🏛️ Community Hall" },
   { value: "private-home", label: "🏠 Private Home" },
   { value: "studio", label: "🎤 Studio / Venue" },
+  { value: "open-mic", label: "🎙️ Open Mic" }
+  { value: "karaoke", label: "🎤 Karaoke" },
   { value: "other", label: "🎸 Other" },
 ];
 

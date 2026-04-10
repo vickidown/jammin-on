@@ -17,6 +17,8 @@ const venueConfig = {
   "community": { color: "#3b82f6", label: "Community Hall" },
   "private-home": { color: "#8b5cf6", label: "Private Home" },
   "studio": { color: "#f59e0b", label: "Studio / Venue" },
+  "open-mic": { color: "#0d9488", label: "Open Mic" },
+  "karaoke": { color: "#be185d", label: "Karaoke" },
   "other": { color: "#10b981", label: "Other" },
 };
 

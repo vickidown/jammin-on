@@ -6,16 +6,18 @@ import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { MessageCircle, X } from "lucide-react";
+import { X } from "lucide-react";
 
-type VenueType = "bar" | "community" | "private-home" | "studio" | "other";
+type VenueType = "bar" | "community" | "private-home" | "studio" | "other" | "karaoke" | "open-mic";
 
 const venueConfig: Record<VenueType, { color: string; label: string; emoji: string }> = {
   "bar":          { color: "#ef4444", label: "Bar / Pub",       emoji: "🍺" },
   "community":    { color: "#3b82f6", label: "Community Hall",  emoji: "🏛️" },
   "private-home": { color: "#8b5cf6", label: "Private Home",    emoji: "🏠" },
-  "studio":       { color: "#f59e0b", label: "Studio / Venue",  emoji: "🎤" },
-  "other":        { color: "#10b981", label: "Other",           emoji: "🎸" },
+  "studio":       { color: "#f59e0b", label: "Studio / Venue",  emoji: "🎸" }, 
+  "karaoke":      { color: "#be185d", label: "Karaoke",         emoji: "🎤" },
+  "open-mic":     { color: "#0d9488", label: "Open Mic",        emoji: "🎙️" },
+  "other":        { color: "#10b981", label: "Other",           emoji: "📍" },
 };
 
 const createCustomIcon = (color: string) =>
@@ -36,7 +38,8 @@ export default function MapComponent() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [visibleTypes, setVisibleTypes] = useState<Record<VenueType, boolean>>({
-    "bar": true, "community": true, "private-home": true, "studio": true, "other": true,
+    "bar": true, "community": true, "private-home": true,
+    "studio": true, "other": true, "karaoke": true, "open-mic": true,
   });
   const [messageEvent, setMessageEvent] = useState<any>(null);
   const [messageText, setMessageText] = useState("");
@@ -126,7 +129,7 @@ export default function MapComponent() {
       <div style={{
         position: "absolute", top: 12, right: 12, zIndex: 1000,
         background: "white", borderRadius: 12, padding: "14px 16px",
-        boxShadow: "0 2px 12px rgba(0,0,0,0.1)", minWidth: 180,
+        boxShadow: "0 2px 12px rgba(0,0,0,0.1)", minWidth: 190,
         border: "1px solid #e2e8f0",
       }}>
         <p style={{ margin: "0 0 10px", fontSize: 11, fontWeight: 600, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.06em" }}>
@@ -144,7 +147,7 @@ export default function MapComponent() {
                   flexShrink: 0,
                 }} />
                 <span style={{ fontSize: 12, color: visibleTypes[key as VenueType] ? "#1e293b" : "#94a3b8" }}>
-                  {config.label}
+                  {config.emoji} {config.label}
                 </span>
               </div>
               <button
@@ -162,9 +165,10 @@ export default function MapComponent() {
             </div>
           ))}
         </div>
+
         <div style={{ display: "flex", gap: 6, marginTop: 12 }}>
           <button
-            onClick={() => setVisibleTypes({ bar: true, community: true, "private-home": true, studio: true, other: true })}
+            onClick={() => setVisibleTypes({ bar: true, community: true, "private-home": true, studio: true, other: true, karaoke: true, "open-mic": true })}
             style={{
               flex: 1, fontSize: 11, padding: "5px 0",
               border: "1px solid #e2e8f0", borderRadius: 8, background: "transparent",
@@ -174,7 +178,7 @@ export default function MapComponent() {
             Show all
           </button>
           <button
-            onClick={() => setVisibleTypes({ bar: false, community: false, "private-home": false, studio: false, other: false })}
+            onClick={() => setVisibleTypes({ bar: false, community: false, "private-home": false, studio: false, other: false, karaoke: false, "open-mic": false })}
             style={{
               flex: 1, fontSize: 11, padding: "5px 0",
               border: "1px solid #e2e8f0", borderRadius: 8, background: "transparent",

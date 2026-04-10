@@ -8,7 +8,7 @@ export type Event = {
   lat: number;
   lng: number;
   type: "public" | "private";
-  venueType: "bar" | "community" | "private-home" | "studio" | "other";
+  venueType: "bar" | "community" | "private-home" | "studio" | "open-mic" | "karaoke" | "other";
   instruments: string[];
   description: string;
 };
