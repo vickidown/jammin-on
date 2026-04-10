@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Music, MapPin, Calendar, Users, Bot, Megaphone } from "lucide-react";
+import { SignInCTA } from "@/components/sign-in-button";
 
 export default function Home() {
   return (
@@ -30,9 +31,7 @@ export default function Home() {
             <Button asChild variant="outline" size="lg" className="text-lg px-10 py-7 border-white/30 hover:bg-white/10">
               <Link href="/ai">Ask AI Assistant</Link>
             </Button>
-            <Button asChild size="lg" className="text-lg px-10 py-7 bg-white text-emerald-900 hover:bg-emerald-50">
-              <Link href="/profile">Sign In / Sign Up</Link>
-            </Button>
+            <SignInCTA />
           </div>
         </div>
       </div>
@@ -152,9 +151,7 @@ export default function Home() {
             <Button asChild variant="outline" size="lg" className="text-lg px-12 py-7 border-white/30 text-white hover:bg-white/10">
               <Link href="/ai">Talk to AI Assistant</Link>
             </Button>
-            <Button asChild size="lg" className="text-lg px-12 py-7 bg-white text-emerald-900 hover:bg-emerald-50">
-              <Link href="/sign-in">Sign In / Sign Up</Link>
-            </Button>
+            <SignInCTA />
           </div>
         </div>
       </div>
