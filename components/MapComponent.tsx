@@ -162,16 +162,28 @@ export default function MapComponent() {
             </div>
           ))}
         </div>
-        <button
-          onClick={() => setVisibleTypes({ bar: true, community: true, "private-home": true, studio: true, other: true })}
-          style={{
-            marginTop: 12, width: "100%", fontSize: 11, padding: "5px 0",
-            border: "1px solid #e2e8f0", borderRadius: 8, background: "transparent",
-            color: "#64748b", cursor: "pointer",
-          }}
-        >
-          Show all
-        </button>
+        <div style={{ display: "flex", gap: 6, marginTop: 12 }}>
+          <button
+            onClick={() => setVisibleTypes({ bar: true, community: true, "private-home": true, studio: true, other: true })}
+            style={{
+              flex: 1, fontSize: 11, padding: "5px 0",
+              border: "1px solid #e2e8f0", borderRadius: 8, background: "transparent",
+              color: "#64748b", cursor: "pointer",
+            }}
+          >
+            Show all
+          </button>
+          <button
+            onClick={() => setVisibleTypes({ bar: false, community: false, "private-home": false, studio: false, other: false })}
+            style={{
+              flex: 1, fontSize: 11, padding: "5px 0",
+              border: "1px solid #e2e8f0", borderRadius: 8, background: "transparent",
+              color: "#64748b", cursor: "pointer",
+            }}
+          >
+            Hide all
+          </button>
+        </div>
       </div>
 
       {/* Message modal */}
