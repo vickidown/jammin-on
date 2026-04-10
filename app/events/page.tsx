@@ -6,8 +6,11 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { fetchEvents, Event } from "@/lib/data";
+import { supabase } from "@/lib/supabase";
+import { useAuth, useUser } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { CheckCircle } from "lucide-react";
 
 const venueConfig = {
   "bar": { color: "#ef4444", label: "Bar / Pub" },
@@ -18,11 +21,14 @@ const venueConfig = {
 };
 
 export default function EventsPage() {
+  const { isSignedIn } = useAuth();
+  const { user } = useUser();
   const [calendarEvents, setCalendarEvents] = useState<any[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [rsvpStatus, setRsvpStatus] = useState<"idle" | "loading" | "done" | "already">("idle");
 
-  useEffect(() => {
+  const loadEvents = () => {
     fetchEvents().then((events) => {
       const formatted = events.map((ev: Event) => {
         const config = venueConfig[ev.venueType as keyof typeof venueConfig] || venueConfig.other;
@@ -39,14 +45,59 @@ export default function EventsPage() {
       setCalendarEvents(formatted);
       setLoading(false);
     });
-  }, []);
-
-  const handleEventClick = (info: any) => {
-    setSelectedEvent(info.event.extendedProps);
   };
 
-  const handleRSVP = (eventId: string) => {
-    alert(`✅ RSVP confirmed for event ${eventId}!\n\n(Real RSVP system coming soon)`);
+  useEffect(() => {
+    loadEvents();
+  }, []);
+
+  const handleEventClick = async (info: any) => {
+    const event = info.event.extendedProps;
+    setSelectedEvent(event);
+    setRsvpStatus("idle");
+
+    // Check if user already RSVP'd
+    if (isSignedIn && user) {
+      const { data } = await supabase
+        .from("rsvps")
+        .select("id")
+        .eq("event_id", event.id)
+        .eq("user_id", user.id)
+        .single();
+
+      if (data) setRsvpStatus("already");
+    }
+  };
+
+  const handleRSVP = async () => {
+    if (!isSignedIn || !user) {
+      alert("Please sign in to RSVP to events!");
+      return;
+    }
+
+    setRsvpStatus("loading");
+
+    const { error } = await supabase.from("rsvps").insert({
+      event_id: selectedEvent.id,
+      user_id: user.id,
+      user_name: user.fullName || user.emailAddresses[0]?.emailAddress,
+      user_email: user.emailAddresses[0]?.emailAddress,
+    });
+
+    if (error) {
+      if (error.code === "23505") {
+        // Unique constraint — already RSVP'd
+        setRsvpStatus("already");
+      } else {
+        alert("Something went wrong. Please try again.");
+        setRsvpStatus("idle");
+        console.error("Supabase error:", JSON.stringify(error));
+        alert(JSON.stringify(error));
+      }
+      return;
+    }
+
+    setRsvpStatus("done");
   };
 
   return (
@@ -80,7 +131,7 @@ export default function EventsPage() {
             </Card>
           </div>
 
-          {/* Event Details + RSVP */}
+          {/* Event Details */}
           <div className="lg:col-span-1">
             {selectedEvent ? (
               <Card className="p-6 sticky top-6">
@@ -103,9 +154,30 @@ export default function EventsPage() {
                 </p>
                 <p className="leading-relaxed mb-6">{selectedEvent.description}</p>
 
-                <Button onClick={() => handleRSVP(selectedEvent.id)} className="w-full">
-                  RSVP — I'm Going!
-                </Button>
+                {/* RSVP Button */}
+                {rsvpStatus === "done" || rsvpStatus === "already" ? (
+                  <div className="flex items-center gap-3 bg-emerald-50 border border-emerald-200 rounded-xl p-4">
+                    <CheckCircle className="h-5 w-5 text-emerald-600 shrink-0" />
+                    <p className="text-sm text-emerald-700 font-medium">
+                      {rsvpStatus === "done" ? "You're going! See you there 🎸" : "You've already RSVP'd to this event!"}
+                    </p>
+                  </div>
+                ) : !isSignedIn ? (
+                  <div className="text-center">
+                    <p className="text-sm text-muted-foreground mb-3">Sign in to RSVP to this event</p>
+                    <Button className="w-full" onClick={() => alert("Please sign in using the navbar!")}>
+                      Sign In to RSVP
+                    </Button>
+                  </div>
+                ) : (
+                  <Button
+                    onClick={handleRSVP}
+                    disabled={rsvpStatus === "loading"}
+                    className="w-full"
+                  >
+                    {rsvpStatus === "loading" ? "Saving..." : "RSVP — I'm Going! 🎸"}
+                  </Button>
+                )}
               </Card>
             ) : (
               <Card className="p-6 text-center text-muted-foreground">
