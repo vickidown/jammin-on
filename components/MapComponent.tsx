@@ -5,7 +5,6 @@ import { fetchEvents, Event } from "@/lib/data";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { useEffect, useState } from "react";
-import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 
 type VenueType = "bar" | "community" | "private-home" | "studio" | "other" | "karaoke" | "open-mic";
@@ -14,22 +13,16 @@ const venueConfig: Record<VenueType, { color: string; label: string; emoji: stri
   "bar":          { color: "#ef4444", label: "Bar / Pub",       emoji: "🍺" },
   "community":    { color: "#3b82f6", label: "Community Hall",  emoji: "🏛️" },
   "private-home": { color: "#8b5cf6", label: "Private Home",    emoji: "🏠" },
-  "studio":       { color: "#f59e0b", label: "Studio / Venue",  emoji: "🎸" }, 
+  "studio":       { color: "#f59e0b", label: "Studio / Venue",  emoji: "🎸" },
+  "other":        { color: "#10b981", label: "Other",           emoji: "📍" },
   "karaoke":      { color: "#be185d", label: "Karaoke",         emoji: "🎤" },
   "open-mic":     { color: "#0d9488", label: "Open Mic",        emoji: "🎙️" },
-  "other":        { color: "#10b981", label: "Other",           emoji: "📍" },
 };
 
 const createCustomIcon = (color: string) =>
   L.divIcon({
     className: "",
-    html: `<div style="
-      width: 14px; height: 14px;
-      border-radius: 50%;
-      background: ${color};
-      border: 2px solid white;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.25);
-    "></div>`,
+    html: `<div style="width:14px;height:14px;border-radius:50%;background:${color};border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.25);"></div>`,
     iconSize: [14, 14],
     iconAnchor: [7, 7],
   });
@@ -37,6 +30,7 @@ const createCustomIcon = (color: string) =>
 export default function MapComponent() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
+  const [legendOpen, setLegendOpen] = useState(false);
   const [visibleTypes, setVisibleTypes] = useState<Record<VenueType, boolean>>({
     "bar": true, "community": true, "private-home": true,
     "studio": true, "other": true, "karaoke": true, "open-mic": true,
@@ -112,7 +106,6 @@ export default function MapComponent() {
                         width: "100%", padding: "7px 12px", background: "#7c3aed",
                         color: "white", border: "none", borderRadius: 8,
                         fontSize: 12, fontWeight: 500, cursor: "pointer",
-                        display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
                       }}
                     >
                       Message Host
@@ -125,137 +118,74 @@ export default function MapComponent() {
         })}
       </MapContainer>
 
-      {/* Legend panel */}
+      {/* Collapsible legend panel */}
       <div style={{
-        <div style={{
-  position: "absolute", top: 12, right: 12, zIndex: 1000,
-  background: "white", borderRadius: 12,
-  boxShadow: "0 2px 12px rgba(0,0,0,0.1)",
-  border: "1px solid #e2e8f0",
-  overflow: "hidden",
-  maxWidth: "calc(100vw - 24px)",
-}}>
-  {/* Legend toggle header */}
-  <button
-    onClick={() => setLegendOpen(!legendOpen)}
-    style={{
-      width: "100%", padding: "10px 14px",
-      display: "flex", alignItems: "center", justifyContent: "space-between",
-      background: "none", border: "none", cursor: "pointer",
-      fontSize: 12, fontWeight: 600, color: "#64748b",
-    }}
-  >
-    <span style={{ textTransform: "uppercase", letterSpacing: "0.06em" }}>Venue type</span>
-    <span>{legendOpen ? "▲" : "▼"}</span>
-  </button>
-
-  {legendOpen && (
-    <div style={{ padding: "0 14px 14px" }}>
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {Object.entries(venueConfig).map(([key, config]) => (
-          <div key={key} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <div style={{
-                width: 10, height: 10, borderRadius: "50%",
-                background: visibleTypes[key as VenueType] ? config.color : "#cbd5e1",
-                border: "1.5px solid white", boxShadow: "0 0 0 1px #e2e8f0", flexShrink: 0,
-              }} />
-              <span style={{ fontSize: 12, color: visibleTypes[key as VenueType] ? "#1e293b" : "#94a3b8" }}>
-                {config.emoji} {config.label}
-              </span>
-            </div>
-            <button
-              onClick={() => toggleType(key as VenueType)}
-              style={{
-                fontSize: 11, padding: "2px 8px", borderRadius: 20,
-                border: `1px solid ${visibleTypes[key as VenueType] ? config.color : "#e2e8f0"}`,
-                background: visibleTypes[key as VenueType] ? `${config.color}15` : "transparent",
-                color: visibleTypes[key as VenueType] ? config.color : "#94a3b8",
-                cursor: "pointer", fontWeight: 500,
-              }}
-            >
-              {visibleTypes[key as VenueType] ? "on" : "off"}
-            </button>
-          </div>
-        ))}
-      </div>
-      <div style={{ display: "flex", gap: 6, marginTop: 12 }}>
-        <button
-          onClick={() => setVisibleTypes({ bar: true, community: true, "private-home": true, studio: true, other: true, karaoke: true, "open-mic": true })}
-          style={{ flex: 1, fontSize: 11, padding: "5px 0", border: "1px solid #e2e8f0", borderRadius: 8, background: "transparent", color: "#64748b", cursor: "pointer" }}
-        >
-          Show all
-        </button>
-        <button
-          onClick={() => setVisibleTypes({ bar: false, community: false, "private-home": false, studio: false, other: false, karaoke: false, "open-mic": false })}
-          style={{ flex: 1, fontSize: 11, padding: "5px 0", border: "1px solid #e2e8f0", borderRadius: 8, background: "transparent", color: "#64748b", cursor: "pointer" }}
-        >
-          Hide all
-        </button>
-      </div>
-    </div>
-  )}
-</div>
-        background: "white", borderRadius: 12, padding: "14px 16px",
-        boxShadow: "0 2px 12px rgba(0,0,0,0.1)", minWidth: 190,
+        position: "absolute", top: 12, right: 12, zIndex: 1000,
+        background: "white", borderRadius: 12,
+        boxShadow: "0 2px 12px rgba(0,0,0,0.1)",
         border: "1px solid #e2e8f0",
+        overflow: "hidden",
+        maxWidth: "calc(100vw - 24px)",
       }}>
-        <p style={{ margin: "0 0 10px", fontSize: 11, fontWeight: 600, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-          Venue type
-        </p>
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {Object.entries(venueConfig).map(([key, config]) => (
-            <div key={key} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                <div style={{
-                  width: 10, height: 10, borderRadius: "50%",
-                  background: visibleTypes[key as VenueType] ? config.color : "#cbd5e1",
-                  border: "1.5px solid white",
-                  boxShadow: "0 0 0 1px #e2e8f0",
-                  flexShrink: 0,
-                }} />
-                <span style={{ fontSize: 12, color: visibleTypes[key as VenueType] ? "#1e293b" : "#94a3b8" }}>
-                  {config.emoji} {config.label}
-                </span>
-              </div>
+        <button
+          onClick={() => setLegendOpen(!legendOpen)}
+          style={{
+            width: "100%", padding: "10px 14px",
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            background: "none", border: "none", cursor: "pointer",
+            fontSize: 12, fontWeight: 600, color: "#64748b",
+          }}
+        >
+          <span style={{ textTransform: "uppercase", letterSpacing: "0.06em" }}>Venue type</span>
+          <span>{legendOpen ? "▲" : "▼"}</span>
+        </button>
+
+        {legendOpen && (
+          <div style={{ padding: "0 14px 14px" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {Object.entries(venueConfig).map(([key, config]) => (
+                <div key={key} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <div style={{
+                      width: 10, height: 10, borderRadius: "50%",
+                      background: visibleTypes[key as VenueType] ? config.color : "#cbd5e1",
+                      border: "1.5px solid white", boxShadow: "0 0 0 1px #e2e8f0", flexShrink: 0,
+                    }} />
+                    <span style={{ fontSize: 12, color: visibleTypes[key as VenueType] ? "#1e293b" : "#94a3b8" }}>
+                      {config.emoji} {config.label}
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => toggleType(key as VenueType)}
+                    style={{
+                      fontSize: 11, padding: "2px 8px", borderRadius: 20,
+                      border: `1px solid ${visibleTypes[key as VenueType] ? config.color : "#e2e8f0"}`,
+                      background: visibleTypes[key as VenueType] ? `${config.color}15` : "transparent",
+                      color: visibleTypes[key as VenueType] ? config.color : "#94a3b8",
+                      cursor: "pointer", fontWeight: 500,
+                    }}
+                  >
+                    {visibleTypes[key as VenueType] ? "on" : "off"}
+                  </button>
+                </div>
+              ))}
+            </div>
+            <div style={{ display: "flex", gap: 6, marginTop: 12 }}>
               <button
-                onClick={() => toggleType(key as VenueType)}
-                style={{
-                  fontSize: 11, padding: "2px 8px", borderRadius: 20,
-                  border: `1px solid ${visibleTypes[key as VenueType] ? config.color : "#e2e8f0"}`,
-                  background: visibleTypes[key as VenueType] ? `${config.color}15` : "transparent",
-                  color: visibleTypes[key as VenueType] ? config.color : "#94a3b8",
-                  cursor: "pointer", fontWeight: 500,
-                }}
+                onClick={() => setVisibleTypes({ bar: true, community: true, "private-home": true, studio: true, other: true, karaoke: true, "open-mic": true })}
+                style={{ flex: 1, fontSize: 11, padding: "5px 0", border: "1px solid #e2e8f0", borderRadius: 8, background: "transparent", color: "#64748b", cursor: "pointer" }}
               >
-                {visibleTypes[key as VenueType] ? "on" : "off"}
+                Show all
+              </button>
+              <button
+                onClick={() => setVisibleTypes({ bar: false, community: false, "private-home": false, studio: false, other: false, karaoke: false, "open-mic": false })}
+                style={{ flex: 1, fontSize: 11, padding: "5px 0", border: "1px solid #e2e8f0", borderRadius: 8, background: "transparent", color: "#64748b", cursor: "pointer" }}
+              >
+                Hide all
               </button>
             </div>
-          ))}
-        </div>
-
-        <div style={{ display: "flex", gap: 6, marginTop: 12 }}>
-          <button
-            onClick={() => setVisibleTypes({ bar: true, community: true, "private-home": true, studio: true, other: true, karaoke: true, "open-mic": true })}
-            style={{
-              flex: 1, fontSize: 11, padding: "5px 0",
-              border: "1px solid #e2e8f0", borderRadius: 8, background: "transparent",
-              color: "#64748b", cursor: "pointer",
-            }}
-          >
-            Show all
-          </button>
-          <button
-            onClick={() => setVisibleTypes({ bar: false, community: false, "private-home": false, studio: false, other: false, karaoke: false, "open-mic": false })}
-            style={{
-              flex: 1, fontSize: 11, padding: "5px 0",
-              border: "1px solid #e2e8f0", borderRadius: 8, background: "transparent",
-              color: "#64748b", cursor: "pointer",
-            }}
-          >
-            Hide all
-          </button>
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Message modal */}
@@ -266,7 +196,7 @@ export default function MapComponent() {
         }}>
           <div style={{
             background: "white", borderRadius: 16, padding: 28, width: "100%",
-            maxWidth: 420, boxShadow: "0 20px 60px rgba(0,0,0,0.2)",
+            maxWidth: 420, boxShadow: "0 20px 60px rgba(0,0,0,0.2)", margin: "0 16px",
           }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16 }}>
               <h3 style={{ margin: 0, fontSize: 17, fontWeight: 600, color: "#0f172a" }}>Message Host</h3>
@@ -292,11 +222,7 @@ export default function MapComponent() {
             <div style={{ display: "flex", gap: 10, marginTop: 14 }}>
               <button
                 onClick={() => { setMessageEvent(null); setMessageText(""); }}
-                style={{
-                  flex: 1, padding: "9px 0", border: "1px solid #e2e8f0",
-                  borderRadius: 10, background: "transparent", fontSize: 14,
-                  color: "#64748b", cursor: "pointer",
-                }}
+                style={{ flex: 1, padding: "9px 0", border: "1px solid #e2e8f0", borderRadius: 10, background: "transparent", fontSize: 14, color: "#64748b", cursor: "pointer" }}
               >
                 Cancel
               </button>
@@ -304,8 +230,8 @@ export default function MapComponent() {
                 onClick={sendMessage}
                 disabled={!messageText.trim()}
                 style={{
-                  flex: 1, padding: "9px 0", border: "none",
-                  borderRadius: 10, background: messageText.trim() ? "#7c3aed" : "#e2e8f0",
+                  flex: 1, padding: "9px 0", border: "none", borderRadius: 10,
+                  background: messageText.trim() ? "#7c3aed" : "#e2e8f0",
                   fontSize: 14, color: messageText.trim() ? "white" : "#94a3b8",
                   cursor: messageText.trim() ? "pointer" : "not-allowed", fontWeight: 500,
                 }}
