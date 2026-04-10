@@ -23,16 +23,17 @@ export default function Home() {
             Discover open mics, blues jams, folk circles and private sessions across Southwestern Ontario.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild size="lg" className="text-lg px-10 py-7">
-              <Link href="/events">Browse Events</Link>
-            </Button>
-            <Button asChild variant="outline" size="lg" className="text-lg px-10 py-7 border-white/30 hover:bg-white/10">
-              <Link href="/ai">Ask AI Assistant</Link>
-            </Button>
-          </div>
-        </div>
-      </div>
+<div className="flex flex-col sm:flex-row gap-4 justify-center">
+  <Button asChild size="lg" className="text-lg px-10 py-7">
+    <Link href="/events">Browse Events</Link>
+  </Button>
+  <Button asChild variant="outline" size="lg" className="text-lg px-10 py-7 border-white/30 hover:bg-white/10">
+    <Link href="/ai">Ask AI Assistant</Link>
+  </Button>
+  <Button asChild size="lg" className="text-lg px-10 py-7 bg-white text-emerald-900 hover:bg-emerald-50">
+    <Link href="/sign-in">Sign In / Sign Up</Link>
+  </Button>
+</div>
 
       {/* New: Looking for Musicians / Jam Calls Section */}
       <div className="bg-amber-50 border-b border-amber-100 py-16">
