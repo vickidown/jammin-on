@@ -8,6 +8,7 @@ import { fetchEvents, Event } from "@/lib/data";
 import { supabase } from "@/lib/supabase";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
 
 interface RSVPWithEvent {
   id: string;
@@ -20,6 +21,11 @@ interface RSVPWithEvent {
   };
 }
 
+const INSTRUMENT_OPTIONS = [
+  "Guitar", "Bass", "Drums", "Vocals", "Keys", "Harmonica",
+  "Violin", "Banjo", "Mandolin", "Saxophone", "Trumpet", "Other"
+];
+
 export default function ProfilePage() {
   const { user, isLoaded } = useUser();
   const router = useRouter();
@@ -27,10 +33,16 @@ export default function ProfilePage() {
   const [rsvps, setRsvps] = useState<RSVPWithEvent[]>([]);
   const [rsvpsLoading, setRsvpsLoading] = useState(true);
 
+  // Musician profile fields
+  const [instruments, setInstruments] = useState<string[]>([]);
+  const [bio, setBio] = useState("");
+  const [city, setCity] = useState("");
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
   useEffect(() => {
-    if (isLoaded && !user) {
-      router.push("/");
-    }
+    if (isLoaded && !user) router.push("/");
   }, [isLoaded, user, router]);
 
   useEffect(() => {
@@ -40,18 +52,60 @@ export default function ProfilePage() {
   useEffect(() => {
     if (!user) return;
 
+    // Load RSVPs
     supabase
       .from("rsvps")
       .select("id, event_id, created_at, events(title, date, location)")
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .then(({ data, error }) => {
-        if (!error && data) {
-          setRsvps(data as RSVPWithEvent[]);
-        }
+        if (!error && data) setRsvps(data as RSVPWithEvent[]);
         setRsvpsLoading(false);
       });
+
+    // Load musician profile
+    supabase
+      .from("user_profiles")
+      .select("*")
+      .eq("user_id", user.id)
+      .single()
+      .then(({ data }) => {
+        if (data) {
+          setInstruments(data.instruments || []);
+          setBio(data.bio || "");
+          setCity(data.city || "");
+        }
+      });
   }, [user]);
+
+  const toggleInstrument = (inst: string) => {
+    setInstruments((prev) =>
+      prev.includes(inst) ? prev.filter((i) => i !== inst) : [...prev, inst]
+    );
+  };
+
+  const saveProfile = async () => {
+    if (!user) return;
+    setSaving(true);
+
+    const { error } = await supabase
+      .from("user_profiles")
+      .upsert({
+        user_id: user.id,
+        instruments,
+        bio,
+        city,
+        updated_at: new Date().toISOString(),
+      }, { onConflict: "user_id" });
+
+    setSaving(false);
+
+    if (!error) {
+      setSaveSuccess(true);
+      setEditing(false);
+      setTimeout(() => setSaveSuccess(false), 3000);
+    }
+  };
 
   if (!isLoaded || !user) {
     return (
@@ -66,13 +120,8 @@ export default function ProfilePage() {
     year: "numeric",
   });
 
-  const upcomingRsvps = rsvps.filter(
-    (r) => new Date(r.events.date) >= new Date()
-  );
-
-  const pastRsvps = rsvps.filter(
-    (r) => new Date(r.events.date) < new Date()
-  );
+  const upcomingRsvps = rsvps.filter((r) => new Date(r.events.date) >= new Date());
+  const pastRsvps = rsvps.filter((r) => new Date(r.events.date) < new Date());
 
   return (
     <div className="max-w-4xl mx-auto p-6">
@@ -81,9 +130,15 @@ export default function ProfilePage() {
         <p className="text-muted-foreground">Manage your musician profile and activity</p>
       </div>
 
+      {saveSuccess && (
+        <div className="mb-6 bg-emerald-50 border border-emerald-200 text-emerald-700 px-6 py-4 rounded-xl text-sm font-medium">
+          ✅ Profile saved successfully!
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Profile Card */}
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-1 space-y-6">
           <Card className="p-8 text-center">
             {user.imageUrl ? (
               <Image
@@ -104,11 +159,26 @@ export default function ProfilePage() {
             <h2 className="text-2xl font-semibold mb-1">
               {user.fullName || user.emailAddresses[0]?.emailAddress}
             </h2>
-            <p className="text-muted-foreground mb-6 text-sm">
+            {city && <p className="text-emerald-600 text-sm font-medium mb-1">📍 {city}</p>}
+            <p className="text-muted-foreground mb-4 text-sm">
               {user.emailAddresses[0]?.emailAddress}
             </p>
 
-            <div className="space-y-4 text-sm">
+            {instruments.length > 0 && (
+              <div className="flex flex-wrap gap-2 justify-center mb-4">
+                {instruments.map((inst) => (
+                  <span key={inst} className="bg-emerald-100 text-emerald-700 text-xs px-3 py-1 rounded-full font-medium">
+                    🎸 {inst}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            {bio && (
+              <p className="text-sm text-muted-foreground italic mb-4">"{bio}"</p>
+            )}
+
+            <div className="space-y-3 text-sm mb-6">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Member since:</span>
                 <span className="font-medium">{memberSince}</span>
@@ -123,13 +193,68 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            <button
-              onClick={() => window.open("https://accounts.clerk.dev/user", "_blank")}
-              className="mt-8 w-full bg-emerald-600 text-white py-3 rounded-lg hover:bg-emerald-700 transition text-sm"
+            <Button
+              onClick={() => setEditing(!editing)}
+              className="w-full"
+              variant={editing ? "outline" : "default"}
             >
-              Edit Profile
-            </button>
+              {editing ? "Cancel" : "✏️ Edit Musician Profile"}
+            </Button>
           </Card>
+
+          {/* Edit Panel */}
+          {editing && (
+            <Card className="p-6">
+              <h3 className="font-semibold mb-4">Edit Musician Profile</h3>
+
+              {/* City */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">📍 Your City</label>
+                <input
+                  value={city}
+                  onChange={(e) => setCity(e.target.value)}
+                  placeholder="e.g. St. Thomas, ON"
+                  className="w-full border rounded-xl px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+
+              {/* Bio */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">🎵 Short Bio</label>
+                <textarea
+                  value={bio}
+                  onChange={(e) => setBio(e.target.value)}
+                  placeholder="e.g. Blues guitarist looking for weekly jams..."
+                  rows={3}
+                  className="w-full border rounded-xl px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
+                />
+              </div>
+
+              {/* Instruments */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium mb-2">🎸 Instruments</label>
+                <div className="flex flex-wrap gap-2">
+                  {INSTRUMENT_OPTIONS.map((inst) => (
+                    <button
+                      key={inst}
+                      onClick={() => toggleInstrument(inst)}
+                      className={`px-3 py-1 rounded-full border text-sm transition ${
+                        instruments.includes(inst)
+                          ? "bg-emerald-600 text-white border-emerald-600"
+                          : "hover:border-emerald-400"
+                      }`}
+                    >
+                      {inst}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <Button onClick={saveProfile} disabled={saving} className="w-full">
+                {saving ? "Saving..." : "Save Profile"}
+              </Button>
+            </Card>
+          )}
         </div>
 
         {/* Activity */}
@@ -216,3 +341,4 @@ export default function ProfilePage() {
     </div>
   );
 }
+
