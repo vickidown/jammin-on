@@ -127,7 +127,75 @@ export default function MapComponent() {
 
       {/* Legend panel */}
       <div style={{
-        position: "absolute", top: 12, right: 12, zIndex: 1000,
+        <div style={{
+  position: "absolute", top: 12, right: 12, zIndex: 1000,
+  background: "white", borderRadius: 12,
+  boxShadow: "0 2px 12px rgba(0,0,0,0.1)",
+  border: "1px solid #e2e8f0",
+  overflow: "hidden",
+  maxWidth: "calc(100vw - 24px)",
+}}>
+  {/* Legend toggle header */}
+  <button
+    onClick={() => setLegendOpen(!legendOpen)}
+    style={{
+      width: "100%", padding: "10px 14px",
+      display: "flex", alignItems: "center", justifyContent: "space-between",
+      background: "none", border: "none", cursor: "pointer",
+      fontSize: 12, fontWeight: 600, color: "#64748b",
+    }}
+  >
+    <span style={{ textTransform: "uppercase", letterSpacing: "0.06em" }}>Venue type</span>
+    <span>{legendOpen ? "▲" : "▼"}</span>
+  </button>
+
+  {legendOpen && (
+    <div style={{ padding: "0 14px 14px" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {Object.entries(venueConfig).map(([key, config]) => (
+          <div key={key} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <div style={{
+                width: 10, height: 10, borderRadius: "50%",
+                background: visibleTypes[key as VenueType] ? config.color : "#cbd5e1",
+                border: "1.5px solid white", boxShadow: "0 0 0 1px #e2e8f0", flexShrink: 0,
+              }} />
+              <span style={{ fontSize: 12, color: visibleTypes[key as VenueType] ? "#1e293b" : "#94a3b8" }}>
+                {config.emoji} {config.label}
+              </span>
+            </div>
+            <button
+              onClick={() => toggleType(key as VenueType)}
+              style={{
+                fontSize: 11, padding: "2px 8px", borderRadius: 20,
+                border: `1px solid ${visibleTypes[key as VenueType] ? config.color : "#e2e8f0"}`,
+                background: visibleTypes[key as VenueType] ? `${config.color}15` : "transparent",
+                color: visibleTypes[key as VenueType] ? config.color : "#94a3b8",
+                cursor: "pointer", fontWeight: 500,
+              }}
+            >
+              {visibleTypes[key as VenueType] ? "on" : "off"}
+            </button>
+          </div>
+        ))}
+      </div>
+      <div style={{ display: "flex", gap: 6, marginTop: 12 }}>
+        <button
+          onClick={() => setVisibleTypes({ bar: true, community: true, "private-home": true, studio: true, other: true, karaoke: true, "open-mic": true })}
+          style={{ flex: 1, fontSize: 11, padding: "5px 0", border: "1px solid #e2e8f0", borderRadius: 8, background: "transparent", color: "#64748b", cursor: "pointer" }}
+        >
+          Show all
+        </button>
+        <button
+          onClick={() => setVisibleTypes({ bar: false, community: false, "private-home": false, studio: false, other: false, karaoke: false, "open-mic": false })}
+          style={{ flex: 1, fontSize: 11, padding: "5px 0", border: "1px solid #e2e8f0", borderRadius: 8, background: "transparent", color: "#64748b", cursor: "pointer" }}
+        >
+          Hide all
+        </button>
+      </div>
+    </div>
+  )}
+</div>
         background: "white", borderRadius: 12, padding: "14px 16px",
         boxShadow: "0 2px 12px rgba(0,0,0,0.1)", minWidth: 190,
         border: "1px solid #e2e8f0",
