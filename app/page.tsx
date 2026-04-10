@@ -31,7 +31,7 @@ export default function Home() {
               <Link href="/ai">Ask AI Assistant</Link>
             </Button>
             <Button asChild size="lg" className="text-lg px-10 py-7 bg-white text-emerald-900 hover:bg-emerald-50">
-              <Link href="/sign-in">Sign In / Sign Up</Link>
+              <Link href="/profile">Sign In / Sign Up</Link>
             </Button>
           </div>
         </div>
