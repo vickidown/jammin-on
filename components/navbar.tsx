@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Music, Map, Calendar, BookOpen, Bot, LayoutDashboard, User, PlusCircle } from "lucide-react";
 import { SignInButton, SignUpButton, SignOutButton, UserButton, useAuth } from "@clerk/nextjs";
+import { Users } from "lucide-react";
 
 export function Navbar() {
   const { isSignedIn } = useAuth();
@@ -27,6 +28,9 @@ export function Navbar() {
           </Link>
           <Link href="/blog" className="flex items-center gap-1 hover:text-emerald-600">
             <BookOpen className="h-4 w-4" /> Blog
+          </Link>
+          <Link href="/musicians" className="flex items-center gap-1 hover:text-emerald-600">
+            <Users className="h-4 w-4" /> Musicians
           </Link>
           <Link href="/ai" className="flex items-center gap-1 hover:text-emerald-600">
             <Bot className="h-4 w-4" /> AI Assistant
