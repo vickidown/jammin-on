@@ -23,19 +23,21 @@ export default function Home() {
             Discover open mics, blues jams, folk circles and private sessions across Southwestern Ontario.
           </p>
 
-<div className="flex flex-col sm:flex-row gap-4 justify-center">
-  <Button asChild size="lg" className="text-lg px-10 py-7">
-    <Link href="/events">Browse Events</Link>
-  </Button>
-  <Button asChild variant="outline" size="lg" className="text-lg px-10 py-7 border-white/30 hover:bg-white/10">
-    <Link href="/ai">Ask AI Assistant</Link>
-  </Button>
-  <Button asChild size="lg" className="text-lg px-10 py-7 bg-white text-emerald-900 hover:bg-emerald-50">
-    <Link href="/sign-in">Sign In / Sign Up</Link>
-  </Button>
-</div>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button asChild size="lg" className="text-lg px-10 py-7">
+              <Link href="/events">Browse Events</Link>
+            </Button>
+            <Button asChild variant="outline" size="lg" className="text-lg px-10 py-7 border-white/30 hover:bg-white/10">
+              <Link href="/ai">Ask AI Assistant</Link>
+            </Button>
+            <Button asChild size="lg" className="text-lg px-10 py-7 bg-white text-emerald-900 hover:bg-emerald-50">
+              <Link href="/sign-in">Sign In / Sign Up</Link>
+            </Button>
+          </div>
+        </div>
+      </div>
 
-      {/* New: Looking for Musicians / Jam Calls Section */}
+      {/* Looking for Musicians / Jam Calls Section */}
       <div className="bg-amber-50 border-b border-amber-100 py-16">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex items-center gap-3 mb-8">
@@ -47,14 +49,13 @@ export default function Home() {
           </p>
 
           <div className="grid md:grid-cols-3 gap-6">
-            {/* Jam Call 1 */}
             <div className="bg-white border border-amber-200 rounded-3xl p-8 hover:shadow-lg transition-all">
               <div className="inline-flex items-center gap-2 bg-amber-100 text-amber-700 text-sm font-medium px-4 py-1 rounded-full mb-4">
                 URGENT • This Weekend
               </div>
               <h3 className="text-2xl font-semibold mb-3">Need a Drummer</h3>
               <p className="text-muted-foreground mb-6">
-                Blues band in St. Thomas looking for a solid drummer for our Saturday jam at The Forge. 
+                Blues band in St. Thomas looking for a solid drummer for our Saturday jam at The Forge.
                 Must know basic blues shuffle.
               </p>
               <div className="flex items-center justify-between text-sm">
@@ -63,7 +64,6 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Jam Call 2 */}
             <div className="bg-white border border-amber-200 rounded-3xl p-8 hover:shadow-lg transition-all">
               <div className="inline-flex items-center gap-2 bg-amber-100 text-amber-700 text-sm font-medium px-4 py-1 rounded-full mb-4">
                 This Week
@@ -78,7 +78,6 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Jam Call 3 */}
             <div className="bg-white border border-amber-200 rounded-3xl p-8 hover:shadow-lg transition-all">
               <div className="inline-flex items-center gap-2 bg-amber-100 text-amber-700 text-sm font-medium px-4 py-1 rounded-full mb-4">
                 Ongoing
@@ -152,6 +151,9 @@ export default function Home() {
             </Button>
             <Button asChild variant="outline" size="lg" className="text-lg px-12 py-7 border-white/30 text-white hover:bg-white/10">
               <Link href="/ai">Talk to AI Assistant</Link>
+            </Button>
+            <Button asChild size="lg" className="text-lg px-12 py-7 bg-white text-emerald-900 hover:bg-emerald-50">
+              <Link href="/sign-in">Sign In / Sign Up</Link>
             </Button>
           </div>
         </div>
