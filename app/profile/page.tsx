@@ -1,7 +1,43 @@
+"use client";
+
+import { useUser } from "@clerk/nextjs";
 import { Card } from "@/components/ui/card";
-import { User, Music, Calendar, MapPin, Award } from "lucide-react";
+import { Calendar, Award, Music } from "lucide-react";
+import { useEffect, useState } from "react";
+import { fetchEvents, Event } from "@/lib/data";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 export default function ProfilePage() {
+  const { user, isLoaded } = useUser();
+  const router = useRouter();
+  const [events, setEvents] = useState<Event[]>([]);
+
+  useEffect(() => {
+    if (isLoaded && !user) {
+      router.push("/");
+    }
+  }, [isLoaded, user, router]);
+
+  useEffect(() => {
+    fetchEvents().then(setEvents);
+  }, []);
+
+  if (!isLoaded || !user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-muted-foreground">Loading profile...</p>
+      </div>
+    );
+  }
+
+  const memberSince = new Date(user.createdAt!).toLocaleDateString("en-CA", {
+    month: "long",
+    year: "numeric",
+  });
+
+  const upcomingEvents = events.slice(0, 3);
+
   return (
     <div className="max-w-4xl mx-auto p-6">
       <div className="mb-10">
@@ -13,85 +49,120 @@ export default function ProfilePage() {
         {/* Profile Card */}
         <div className="lg:col-span-1">
           <Card className="p-8 text-center">
-            <div className="w-24 h-24 mx-auto bg-emerald-100 rounded-full flex items-center justify-center mb-6">
-              <User className="h-12 w-12 text-emerald-600" />
-            </div>
-            
-            <h2 className="text-2xl font-semibold mb-1">Alex Rivera</h2>
-            <p className="text-muted-foreground mb-6">Guitarist & Vocalist • St. Thomas, ON</p>
+            {/* Avatar */}
+            {user.imageUrl ? (
+              <Image
+                src={user.imageUrl}
+                alt="Profile"
+                width={96}
+                height={96}
+                className="rounded-full mx-auto mb-6 border-4 border-emerald-100"
+              />
+            ) : (
+              <div className="w-24 h-24 mx-auto bg-emerald-100 rounded-full flex items-center justify-center mb-6">
+                <span className="text-3xl font-bold text-emerald-600">
+                  {user.firstName?.charAt(0) || user.emailAddresses[0]?.emailAddress?.charAt(0).toUpperCase()}
+                </span>
+              </div>
+            )}
+
+            <h2 className="text-2xl font-semibold mb-1">
+              {user.fullName || user.emailAddresses[0]?.emailAddress}
+            </h2>
+            <p className="text-muted-foreground mb-6 text-sm">
+              {user.emailAddresses[0]?.emailAddress}
+            </p>
 
             <div className="space-y-4 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Instruments:</span>
-                <span className="font-medium">Guitar, Vocals</span>
-              </div>
-              <div className="flex justify-between">
                 <span className="text-muted-foreground">Member since:</span>
-                <span className="font-medium">March 2026</span>
+                <span className="font-medium">{memberSince}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">RSVP'd to:</span>
-                <span className="font-medium">7 events</span>
+                <span className="text-muted-foreground">Events available:</span>
+                <span className="font-medium">{events.length}</span>
               </div>
             </div>
 
-            <button className="mt-8 w-full bg-emerald-600 text-white py-3 rounded-lg hover:bg-emerald-700 transition">
+            <button
+              onClick={() => window.open("https://accounts.clerk.dev/user", "_blank")}
+              className="mt-8 w-full bg-emerald-600 text-white py-3 rounded-lg hover:bg-emerald-700 transition text-sm"
+            >
               Edit Profile
             </button>
           </Card>
         </div>
 
-        {/* Activity & Stats */}
+        {/* Activity */}
         <div className="lg:col-span-2 space-y-8">
-          {/* Upcoming RSVPs */}
+          {/* Upcoming Jams */}
           <Card className="p-8">
             <div className="flex items-center gap-3 mb-6">
               <Calendar className="h-6 w-6 text-emerald-600" />
-              <h3 className="text-xl font-semibold">My Upcoming Jams</h3>
+              <h3 className="text-xl font-semibold">Upcoming Jams Near You</h3>
             </div>
-            
-            <div className="space-y-6">
-              <div className="flex gap-4">
-                <div className="text-right w-20 text-sm text-muted-foreground">Apr 12</div>
-                <div>
-                  <p className="font-medium">Open Mic Night @ London Music Club</p>
-                  <p className="text-sm text-muted-foreground">7:00 PM • London, ON</p>
-                </div>
-              </div>
 
-              <div className="flex gap-4">
-                <div className="text-right w-20 text-sm text-muted-foreground">Apr 15</div>
-                <div>
-                  <p className="font-medium">Blues Jam at the Forge</p>
-                  <p className="text-sm text-muted-foreground">8:00 PM • St. Thomas, ON</p>
-                </div>
+            {upcomingEvents.length === 0 ? (
+              <p className="text-muted-foreground text-sm">No upcoming events yet.</p>
+            ) : (
+              <div className="space-y-6">
+                {upcomingEvents.map((event) => (
+                  <div key={event.id} className="flex gap-4">
+                    <div className="text-right w-20 text-sm text-muted-foreground shrink-0">
+                      {new Date(event.date).toLocaleDateString("en-CA", { month: "short", day: "numeric" })}
+                    </div>
+                    <div>
+                      <p className="font-medium">{event.title}</p>
+                      <p className="text-sm text-muted-foreground">{event.location}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
-            </div>
+            )}
           </Card>
 
-          {/* My Contributions */}
+          {/* Stats */}
           <Card className="p-8">
             <div className="flex items-center gap-3 mb-6">
               <Award className="h-6 w-6 text-emerald-600" />
               <h3 className="text-xl font-semibold">My Activity</h3>
             </div>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-              <div className="bg-muted/50 p-6 rounded-xl">
-                <p className="text-3xl font-bold text-emerald-600">4</p>
-                <p className="text-sm text-muted-foreground">Events Hosted</p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              <div className="bg-muted/50 p-6 rounded-xl text-center">
+                <p className="text-3xl font-bold text-emerald-600">{events.length}</p>
+                <p className="text-sm text-muted-foreground">Active Jams</p>
               </div>
-              <div className="bg-muted/50 p-6 rounded-xl">
-                <p className="text-3xl font-bold text-emerald-600">12</p>
-                <p className="text-sm text-muted-foreground">Events Attended</p>
+              <div className="bg-muted/50 p-6 rounded-xl text-center">
+                <p className="text-3xl font-bold text-emerald-600">0</p>
+                <p className="text-sm text-muted-foreground">RSVPs (coming soon)</p>
+              </div>
+              <div className="bg-muted/50 p-6 rounded-xl text-center">
+                <p className="text-3xl font-bold text-emerald-600">0</p>
+                <p className="text-sm text-muted-foreground">Jams Posted</p>
               </div>
             </div>
           </Card>
-        </div>
-      </div>
 
-      <div className="mt-12 text-center text-sm text-muted-foreground">
-        Full profile features (real auth, photo upload, private events) coming soon with Clerk integration.
+          {/* Quick Actions */}
+          <Card className="p-8">
+            <div className="flex items-center gap-3 mb-6">
+              <Music className="h-6 w-6 text-emerald-600" />
+              <h3 className="text-xl font-semibold">Quick Actions</h3>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <a href="/post-jam" className="bg-emerald-600 text-white px-5 py-2 rounded-lg text-sm hover:bg-emerald-700 transition">
+                + Post a Jam
+              </a>
+              <a href="/events" className="border px-5 py-2 rounded-lg text-sm hover:border-emerald-400 transition">
+                Browse Events
+              </a>
+              <a href="/ai" className="border px-5 py-2 rounded-lg text-sm hover:border-emerald-400 transition">
+                Ask AI Assistant
+              </a>
+            </div>
+          </Card>
+        </div>
       </div>
     </div>
   );
