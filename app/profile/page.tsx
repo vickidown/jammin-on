@@ -59,8 +59,8 @@ export default function ProfilePage() {
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
       .then(({ data, error }) => {
-        if (!error && data) setRsvps(data as RSVPWithEvent[]);
-        setRsvpsLoading(false);
+        if (!error && data) setRsvps(data as unknown as RSVPWithEvent[]);
+          setRsvpsLoading(false);
       });
 
     // Load musician profile
