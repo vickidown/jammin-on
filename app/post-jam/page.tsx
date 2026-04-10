@@ -52,7 +52,6 @@ export default function PostJamPage() {
   };
 
   const handleSubmit = async () => {
-    // Validation
     if (!form.title || !form.date || !form.location || !form.description) {
       setError("Please fill in all required fields.");
       return;
@@ -61,7 +60,6 @@ export default function PostJamPage() {
     setLoading(true);
     setError("");
 
-    // Default coords for Ontario cities if not provided
     const lat = form.lat ? parseFloat(form.lat) : 42.777;
     const lng = form.lng ? parseFloat(form.lng) : -81.183;
 
@@ -77,45 +75,32 @@ export default function PostJamPage() {
       description: form.description,
     });
 
-    setLoading(false);
-
     if (supabaseError) {
       setError("Something went wrong. Please try again.");
+      setLoading(false);
       console.error(supabaseError);
       return;
     }
 
-    setSuccess(true);
-    setTimeout(() => router.push("/events"), 2000);
-  };
-
-    setLoading(true);
-    setError("");
-
-    // Default coords for Ontario cities if not provided
-    const lat = form.lat ? parseFloat(form.lat) : 42.777;
-    const lng = form.lng ? parseFloat(form.lng) : -81.183;
-
-    const { error: supabaseError } = await supabase.from("events").insert({
-      title: form.title,
-      date: form.date,
-      location: form.location,
-      lat,
-      lng,
-      type: form.type,
-      venue_type: form.venueType,
-      instruments: form.instruments,
-      description: form.description,
-    });
-
-    setLoading(false);
-
-    if (supabaseError) {
-      setError("Something went wrong. Please try again.");
-      console.error(supabaseError);
-      return;
+    // Send email notification
+    try {
+      await fetch("/api/notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: form.title,
+          date: form.date,
+          location: form.location,
+          description: form.description,
+          venueType: form.venueType,
+          type: form.type,
+        }),
+      });
+    } catch (err) {
+      console.error("Failed to send notification email:", err);
     }
 
+    setLoading(false);
     setSuccess(true);
     setTimeout(() => router.push("/events"), 2000);
   };
@@ -144,7 +129,6 @@ export default function PostJamPage() {
       </div>
 
       <Card className="p-8 space-y-8">
-        {/* Title */}
         <div>
           <label className="block text-sm font-medium mb-2">
             <Music className="inline h-4 w-4 mr-1 text-emerald-600" />
@@ -159,7 +143,6 @@ export default function PostJamPage() {
           />
         </div>
 
-        {/* Date */}
         <div>
           <label className="block text-sm font-medium mb-2">
             <Calendar className="inline h-4 w-4 mr-1 text-emerald-600" />
@@ -174,7 +157,6 @@ export default function PostJamPage() {
           />
         </div>
 
-        {/* Location */}
         <div>
           <label className="block text-sm font-medium mb-2">
             <MapPin className="inline h-4 w-4 mr-1 text-emerald-600" />
@@ -189,7 +171,6 @@ export default function PostJamPage() {
           />
         </div>
 
-        {/* Venue Type */}
         <div>
           <label className="block text-sm font-medium mb-2">Venue Type</label>
           <select
@@ -204,7 +185,6 @@ export default function PostJamPage() {
           </select>
         </div>
 
-        {/* Public / Private */}
         <div>
           <label className="block text-sm font-medium mb-2">Event Type</label>
           <div className="flex gap-4">
@@ -224,7 +204,6 @@ export default function PostJamPage() {
           </div>
         </div>
 
-        {/* Instruments */}
         <div>
           <label className="block text-sm font-medium mb-2">
             <Users className="inline h-4 w-4 mr-1 text-emerald-600" />
@@ -247,7 +226,6 @@ export default function PostJamPage() {
           </div>
         </div>
 
-        {/* Description */}
         <div>
           <label className="block text-sm font-medium mb-2">
             Description <span className="text-red-500">*</span>
@@ -262,12 +240,10 @@ export default function PostJamPage() {
           />
         </div>
 
-        {/* Error */}
         {error && (
           <p className="text-red-500 text-sm">{error}</p>
         )}
 
-        {/* Submit */}
         <Button
           onClick={handleSubmit}
           disabled={loading}
