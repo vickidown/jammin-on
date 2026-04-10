@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Music, Map, Calendar, BookOpen, Bot, LayoutDashboard, User, PlusCircle, Users, Menu, X } from "lucide-react";
+import { Music, Map, Calendar, BookOpen, Bot, LayoutDashboard, User, PlusCircle, Users, Menu, X, Inbox } from "lucide-react";
 import { SignInButton, SignUpButton, SignOutButton, UserButton, useAuth } from "@clerk/nextjs";
 
 const navLinks = [
@@ -17,6 +17,7 @@ const navLinks = [
 
 const authLinks = [
   { href: "/post-jam", label: "Post a Jam", icon: PlusCircle },
+  { href: "/inbox", label: "Inbox", icon: Inbox },
   { href: "/profile", label: "Profile", icon: User },
 ];
 
