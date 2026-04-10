@@ -53,7 +53,8 @@ INSTRUCTIONS:
 - For event-related questions, ALWAYS search the web for additional local events not in the database
 - When you find events via web search, present them clearly with name, date, location, and a note that they're "not yet on JamFinder"
 - Format any web-found events like this so they can be added to the app:
-  🌐 [Event Name] | [Date] | [Location] | [Brief description] | [latitude] | [longitude] | ADD_TO_APP
+  🌐 [Event Name] | [Date] | [Location] | [Brief description] | [latitude] | [longitude] | [venue_type] | ADD_TO_APP
+- venue_type must be one of: bar, community, private-home, studio, karaoke, open-mic, other
 - For coordinates, look up the actual venue address and provide real lat/lng coordinates for the specific city/venue in Ontario. For example London ON is 42.9849,-81.2451 and St. Thomas ON is 42.7775,-81.1823 and Toronto ON is 43.6532,-79.3832. Try to be as specific as possible to the actual venue.
 - For events already in JamFinder, show them normally without the ADD_TO_APP tag
 - Keep responses friendly and music-focused`,
