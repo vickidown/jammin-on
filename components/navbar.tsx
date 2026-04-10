@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { PlusCircle } from "lucide-react";
 import { Music, Map, Calendar, BookOpen, Bot, LayoutDashboard, User } from "lucide-react";
 
 export function Navbar() {
@@ -30,6 +31,9 @@ export function Navbar() {
           </Link>
           <Link href="/profile" className="flex items-center gap-1 hover:text-emerald-600">
             <User className="h-4 w-4" /> Profile
+          </Link>
+          <Link href="/post-jam" className="flex items-center gap-1 hover:text-emerald-600">
+            <PlusCircle className="h-4 w-4" /> Post a Jam
           </Link>
         </div>
 

@@ -1,3 +1,5 @@
+import { supabase } from "./supabase";
+ 
 export type Event = {
   id: string;
   title: string;
@@ -6,11 +8,12 @@ export type Event = {
   lat: number;
   lng: number;
   type: "public" | "private";
-  venueType: "bar" | "community" | "private-home" | "studio" | "other"; // ← Updated
+  venueType: "bar" | "community" | "private-home" | "studio" | "other";
   instruments: string[];
   description: string;
 };
-
+ 
+// Hardcoded fallback (used until Supabase is fully wired in)
 export const publicEvents: Event[] = [
   {
     id: "1",
@@ -61,3 +64,29 @@ export const publicEvents: Event[] = [
     description: "Small private jam at my place. Message for address.",
   },
 ];
+ 
+// Fetch events from Supabase
+export async function fetchEvents(): Promise<Event[]> {
+  const { data, error } = await supabase
+    .from("events")
+    .select("*")
+    .order("date", { ascending: true });
+ 
+  if (error) {
+    console.error("Error fetching events:", error);
+    return publicEvents; // fall back to hardcoded if Supabase fails
+  }
+ 
+  return data.map((ev) => ({
+    id: ev.id,
+    title: ev.title,
+    date: ev.date,
+    location: ev.location,
+    lat: ev.lat,
+    lng: ev.lng,
+    type: ev.type,
+    venueType: ev.venue_type,
+    instruments: ev.instruments,
+    description: ev.description,
+  }));
+}

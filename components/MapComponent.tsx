@@ -1,7 +1,7 @@
 "use client";
 
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import { publicEvents } from "@/lib/data";
+import { fetchEvents, Event } from "@/lib/data";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import { useEffect, useState } from "react";
@@ -29,6 +29,8 @@ const createCustomIcon = (color: string) => {
 };
 
 export default function MapComponent() {
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
   const [visibleTypes, setVisibleTypes] = useState<Record<VenueType, boolean>>({
     "bar": true,
     "community": true,
@@ -40,23 +42,6 @@ export default function MapComponent() {
   const [messageEvent, setMessageEvent] = useState<any>(null);
   const [messageText, setMessageText] = useState("");
 
-  const toggleType = (type: VenueType) => {
-    setVisibleTypes(prev => ({ ...prev, [type]: !prev[type] }));
-  };
-
-  const filteredEvents = publicEvents.filter(event => 
-    visibleTypes[event.venueType as VenueType]
-  );
-
-  const sendMessage = () => {
-    if (!messageEvent || !messageText.trim()) return;
-
-    alert(`✅ Message sent to host of "\( {messageEvent.title}"!\n\nYour message:\n" \){messageText}"\n\n(Real messaging will be added with Supabase + Clerk later)`);
-    
-    setMessageText("");
-    setMessageEvent(null);
-  };
-
   useEffect(() => {
     delete (L.Icon.Default.prototype as any)._getIconUrl;
     L.Icon.Default.mergeOptions({
@@ -64,7 +49,31 @@ export default function MapComponent() {
       iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
       shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
     });
+
+    fetchEvents().then((data) => {
+      setEvents(data);
+      setLoading(false);
+    });
   }, []);
+
+  const toggleType = (type: VenueType) => {
+    setVisibleTypes(prev => ({ ...prev, [type]: !prev[type] }));
+  };
+
+  const filteredEvents = events.filter(event =>
+    visibleTypes[event.venueType as VenueType]
+  );
+
+  const sendMessage = () => {
+    if (!messageEvent || !messageText.trim()) return;
+    alert(`✅ Message sent to host of "${messageEvent.title}"!\n\nYour message:\n"${messageText}"\n\n(Real messaging coming soon)`);
+    setMessageText("");
+    setMessageEvent(null);
+  };
+
+  if (loading) {
+    return <p className="text-center py-12 text-muted-foreground">Loading map...</p>;
+  }
 
   return (
     <div className="relative">
@@ -83,8 +92,8 @@ export default function MapComponent() {
           const isPrivate = event.type === "private" || event.venueType === "private-home";
 
           return (
-            <Marker 
-              key={event.id} 
+            <Marker
+              key={event.id}
               position={[event.lat, event.lng]}
               icon={createCustomIcon(config.color)}
             >
@@ -99,7 +108,7 @@ export default function MapComponent() {
                 <div className="text-sm mt-3 leading-snug">{event.description}</div>
 
                 {isPrivate && (
-                  <Button 
+                  <Button
                     onClick={() => setMessageEvent(event)}
                     className="w-full mt-4 bg-violet-600 hover:bg-violet-700"
                     size="sm"
@@ -119,13 +128,13 @@ export default function MapComponent() {
         <h3 className="font-semibold mb-4 flex items-center gap-2">
           🎯 Show on Map
         </h3>
-        
+
         <div className="space-y-3">
           {Object.entries(venueConfig).map(([key, config]) => (
             <div key={key} className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div 
-                  className="w-5 h-5 rounded-full border-2 border-white shadow" 
+                <div
+                  className="w-5 h-5 rounded-full border-2 border-white shadow"
                   style={{ backgroundColor: config.color }}
                 />
                 <span className="text-sm">{config.emoji} {config.label}</span>
@@ -141,9 +150,9 @@ export default function MapComponent() {
           ))}
         </div>
 
-        <Button 
-          variant="outline" 
-          size="sm" 
+        <Button
+          variant="outline"
+          size="sm"
           className="w-full mt-6"
           onClick={() => setVisibleTypes({ bar: true, community: true, "private-home": true, studio: true, other: true })}
         >
@@ -162,20 +171,20 @@ export default function MapComponent() {
 
             <textarea
               className="w-full h-32 p-4 border rounded-xl resize-y min-h-[120px] mb-6"
-              placeholder="Hi! I'm interested in your private jam. What time should I arrive? Do I need to bring anything?"
+              placeholder="Hi! I'm interested in your jam. What time should I arrive?"
               value={messageText}
               onChange={(e) => setMessageText(e.target.value)}
             />
 
             <div className="flex gap-3">
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => { setMessageEvent(null); setMessageText(""); }}
                 className="flex-1"
               >
                 Cancel
               </Button>
-              <Button 
+              <Button
                 onClick={sendMessage}
                 disabled={!messageText.trim()}
                 className="flex-1"

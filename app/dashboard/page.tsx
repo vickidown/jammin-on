@@ -1,20 +1,21 @@
 import { Card } from "@/components/ui/card";
 import { Calendar, Users, MapPin, Music } from "lucide-react";
-import { publicEvents } from "@/lib/data";
+import { fetchEvents } from "@/lib/data";
 
-export default function DashboardPage() {
-  const upcomingEvents = publicEvents.slice(0, 3);
+export default async function DashboardPage() {
+  const events = await fetchEvents();
+  const upcomingEvents = events.slice(0, 3);
 
   return (
     <div className="max-w-7xl mx-auto p-6">
       <h1 className="text-4xl font-bold mb-8">Welcome to JamFinder</h1>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
         <Card className="p-6">
           <div className="flex items-center gap-4">
             <Music className="h-10 w-10 text-emerald-600" />
             <div>
-              <p className="text-3xl font-bold">12</p>
+              <p className="text-3xl font-bold">{events.length}</p>
               <p className="text-sm text-muted-foreground">Active Jams</p>
             </div>
           </div>
@@ -34,7 +35,9 @@ export default function DashboardPage() {
           <div className="flex items-center gap-4">
             <MapPin className="h-10 w-10 text-emerald-600" />
             <div>
-              <p className="text-3xl font-bold">8</p>
+              <p className="text-3xl font-bold">
+                {new Set(events.map((e) => e.location)).size}
+              </p>
               <p className="text-sm text-muted-foreground">Cities</p>
             </div>
           </div>
@@ -44,7 +47,15 @@ export default function DashboardPage() {
           <div className="flex items-center gap-4">
             <Calendar className="h-10 w-10 text-emerald-600" />
             <div>
-              <p className="text-3xl font-bold">3</p>
+              <p className="text-3xl font-bold">
+                {events.filter((e) => {
+                  const eventDate = new Date(e.date);
+                  const now = new Date();
+                  const weekFromNow = new Date();
+                  weekFromNow.setDate(now.getDate() + 7);
+                  return eventDate >= now && eventDate <= weekFromNow;
+                }).length}
+              </p>
               <p className="text-sm text-muted-foreground">This Week</p>
             </div>
           </div>
