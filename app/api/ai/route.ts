@@ -1,38 +1,42 @@
-import { NextRequest } from "next/server";
-import { Anthropic } from "@anthropic-ai/sdk";
+import { NextRequest, NextResponse } from "next/server";
+import Anthropic from "@anthropic-ai/sdk";
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY!,
+const client = new Anthropic({
+  apiKey: process.env.ANTHROPIC_API_KEY,
 });
 
-export async function POST(request: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
-    const { prompt } = await request.json();
+    const { message } = await req.json();
 
-    const message = await anthropic.messages.create({
-      model: "claude-3-5-sonnet-20241022",
+    if (!message || typeof message !== "string") {
+      return NextResponse.json({ error: "Message is required" }, { status: 400 });
+    }
+
+    const response = await client.messages.create({
+      model: "claude-opus-4-6",
       max_tokens: 1024,
-      messages: [
-        {
-          role: "user",
-          content: `You are an expert Ontario music jam coordinator. 
-          Current public events: Open Mic in London on April 12, Blues Jam in St. Thomas on April 15, Folk Circle in Toronto on April 18.
-          Help the user with jam recommendations, suggestions, or generating event ideas.
-          User question: ${prompt}`,
-        },
-      ],
+      system: `You are an AI Jam Assistant for a music app called Jam Finder. 
+You help musicians in two ways:
+1. Help them find jam sessions, open mics, and music meetups near them (ask for their city/location if not provided)
+2. Give practical music and jamming tips — gear advice, technique, how to connect with other musicians, etc.
+
+Keep responses friendly, concise, and music-focused. Use a conversational tone. 
+If someone asks about finding jams, ask for their location and genre preferences.
+If they ask for tips, give actionable, specific advice.`,
+      messages: [{ role: "user", content: message }],
     });
 
+    const text = response.content
+      .filter((block) => block.type === "text")
+      .map((block) => (block as { type: "text"; text: string }).text)
+      .join("\n");
 
-    const responseText = message.content[0].type === "text" 
-      ? message.content[0].text 
-      : "No response from Claude.";
-
-    return Response.json({ response: responseText });
+    return NextResponse.json({ reply: text });
   } catch (error) {
-    console.error(error);
-    return Response.json(
-      { response: "Sorry, there was an error with the AI. Please check your ANTHROPIC_API_KEY in .env.local and Vercel." },
+    console.error("Anthropic API error:", error);
+    return NextResponse.json(
+      { error: "Failed to get AI response" },
       { status: 500 }
     );
   }
