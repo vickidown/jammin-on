@@ -14,6 +14,8 @@ interface WebEvent {
   date: string;
   location: string;
   description: string;
+  lat: number;
+  lng: number;
 }
 
 function parseWebEvents(text: string): WebEvent[] {
@@ -28,6 +30,8 @@ function parseWebEvents(text: string): WebEvent[] {
           date: parts[1]?.trim() || "",
           location: parts[2]?.trim() || "",
           description: parts[3]?.trim() || "",
+          lat: parseFloat(parts[4]?.trim() || "42.777"),
+          lng: parseFloat(parts[5]?.trim() || "-81.183"),
         });
       }
     }
@@ -103,8 +107,8 @@ export default function AIPage() {
       title: event.name,
       date,
       location: event.location || "Ontario",
-      lat: 42.777,
-      lng: -81.183,
+      lat: event.lat || 42.777,
+      lng: event.lng || -81.183,
       type: "public",
       venue_type: "other",
       instruments: [],
