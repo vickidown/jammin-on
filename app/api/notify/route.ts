@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
             <p style="margin: 0; color: #444;">${description}</p>
           </div>
  
-          <a href="https://jamfinder.ca/events" 
+          <a href="https://jammin-on.ca/events" 
              style="display: inline-block; background: #16a34a; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; margin-top: 16px;">
             View on JamFinder →
           </a>

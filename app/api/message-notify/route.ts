@@ -26,7 +26,7 @@ export async function POST(req: NextRequest) {
           <div style="background: #f8fafc; padding: 16px; border-radius: 8px; margin: 16px 0; border-left: 4px solid #16a34a;">
             <p style="margin: 0; color: #374151;">${body}</p>
           </div>
-          <a href="https://jamfinder.ca/inbox" style="display: inline-block; background: #16a34a; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; margin-top: 16px;">
+          <a href="https://jammin-on.ca/inbox" style="display: inline-block; background: #16a34a; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; margin-top: 16px;">
             View in Inbox →
           </a>
         </div>
