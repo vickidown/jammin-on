@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 
 interface Message {
   id: string;
+  sender_id: string;
   sender_name: string;
   sender_email: string;
   subject: string;
