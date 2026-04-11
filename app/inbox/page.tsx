@@ -123,14 +123,34 @@ export default function InboxPage() {
               <div className="border-t pt-4">
                 <p className="text-sm leading-relaxed whitespace-pre-wrap">{selected.body}</p>
               </div>
-              <div className="mt-6">
-                <a
-                  href={`mailto:${selected.sender_email}`}
-                  className="bg-emerald-600 text-white px-5 py-2 rounded-lg text-sm hover:bg-emerald-700 transition inline-block"
-                >
-                  Reply via Email
-                </a>
-              </div>
+              <div className="mt-6 border-t pt-4">
+  <p className="text-sm font-medium mb-2">Reply</p>
+  <textarea
+    id="reply-box"
+    placeholder="Type your reply..."
+    rows={3}
+    className="w-full border rounded-xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-emerald-500 resize-none mb-3"
+  />
+  <button
+    onClick={async () => {
+      const replyText = (document.getElementById("reply-box") as HTMLTextAreaElement)?.value;
+      if (!replyText?.trim() || !user) return;
+      await supabase.from("messages").insert({
+        sender_id: user.id,
+        sender_name: user.fullName || user.emailAddresses[0]?.emailAddress,
+        sender_email: user.emailAddresses[0]?.emailAddress,
+        recipient_id: selected.sender_id,
+        subject: `Re: ${selected.subject}`,
+        body: replyText,
+      });
+      (document.getElementById("reply-box") as HTMLTextAreaElement).value = "";
+      alert("Reply sent! ✅");
+    }}
+    className="bg-emerald-600 text-white px-5 py-2 rounded-lg text-sm hover:bg-emerald-700 transition"
+  >
+    Send Reply
+  </button>
+</div>
             </Card>
           ) : (
             <Card className="p-6 text-center text-muted-foreground">
